@@ -36,14 +36,19 @@ import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.message.action.FriendNudge
+import net.mamoe.mirai.message.action.MemberNudge
+import net.mamoe.mirai.message.action.UserNudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.message.data.isContentEmpty
 import org.itxtech.mirainative.Bridge
 import org.itxtech.mirainative.MiraiNative
 import org.itxtech.mirainative.fromNative
@@ -129,8 +134,12 @@ object MiraiBridge {
         MiraiNative.launch {
             CacheManager.findUser(id)?.apply {
                 val chain = ChainCodeConverter.codeToChain(message, this)
-                sendMessage(chain).apply {
-                    CacheManager.cacheMessage(source, internalId, chain)
+                if(chain.isContentEmpty()){
+                    MiraiNative.logger.warning("message is empty")
+                }else {
+                    sendMessage(chain).apply {
+                        CacheManager.cacheMessage(source, chain)
+                    }
                 }
             }
         }
@@ -142,8 +151,12 @@ object MiraiBridge {
         MiraiNative.launch {
             val contact = MiraiNative.bot.getGroup(id)
             val chain = ChainCodeConverter.codeToChain(message, contact)
-            contact?.sendMessage(chain)?.apply {
-                CacheManager.cacheMessage(source, internalId, chain)
+            if(chain.isContentEmpty()){
+                MiraiNative.logger.warning("message is empty")
+            }else {
+                contact?.sendMessage(chain)?.apply {
+                    CacheManager.cacheMessage(source, chain)
+                }
             }
         }
         return internalId
@@ -302,15 +315,15 @@ object MiraiBridge {
     fun getImage(pluginId: Int, image: String): String =
         call("CQ_getImage", pluginId, "", "Error occurred when plugin %0 downloading image $image") {
             return@call runBlocking {
-                val img = image.replace(".mnimg,type=flash","").replace(".mnimg", "") // fix when get flash image
+                val img = image.replace(".mnimg,type=flash", "").replace(".mnimg", "") // fix when get flash image
                 val u = Image(img).queryUrl()
                 if (u != "") {
                     client.prepareGet(u).execute { response ->
                         if (response.status.isSuccess()) {
                             val md = MessageDigest.getInstance("MD5")
                             val basename = MiraiNative.imageDataPath.absolutePath + File.separatorChar +
-                                BigInteger(1, md.digest(img.toByteArray()))
-                                    .toString(16).padStart(32, '0')
+                                    BigInteger(1, md.digest(img.toByteArray()))
+                                        .toString(16).padStart(32, '0')
                             val ext = when (response.headers[HttpHeaders.ContentType]) {
                                 "image/gif" -> "gif"
                                 "image/png" -> "png"
@@ -319,6 +332,7 @@ object MiraiBridge {
                                 "image/tiff" -> "tiff"
                                 else -> "jpg"
                             }
+
                             val file = File("$basename.$ext")
                             response.bodyAsChannel().copyAndClose(file.writeChannel())
                             file.absolutePath
@@ -326,7 +340,7 @@ object MiraiBridge {
                             ""
                         }
                     }
-                } else {
+                }else {
                     ""
                 }
             }
@@ -350,7 +364,7 @@ object MiraiBridge {
                             ""
                         }
                     }
-                } else {
+                }else{
                     ""
                 }
             }
@@ -401,6 +415,28 @@ object MiraiBridge {
         fwe.color = pk.readInt()
     }
 
+    fun sendFriendNudge(pluginId: Int, account: Long, target: Long) = call("CQ_sendFriendNudge", pluginId, 0) {
+        MiraiNative.launch {
+            val friend = MiraiNative.bot.getFriend(account)
+            val to = MiraiNative.bot.getFriend(target)
+            if (friend != null && to != null) {
+                FriendNudge(to).sendTo(friend)
+            }
+        }
+        return 0
+    }
+
+    fun sendGroupNudge(pluginId: Int, group: Long, target: Long) = call("CQ_sendGroupNudge", pluginId, 0) {
+        MiraiNative.launch {
+            val contact = MiraiNative.bot.getGroup(group)
+            val member = contact!!.get(target)
+            if (member != null) {
+                MemberNudge(member).sendTo(contact)
+            }
+        }
+        return 0
+    }
+
     fun ByteReadPacket.readString(): String {
         return String(readBytes(readShort().toInt()))
     }
@@ -447,14 +483,14 @@ object MiraiBridge {
 }
 
 object NativeLoggerHelper {
-    const val LOG_DEBUG = 0
-    const val LOG_INFO = 10
-    const val LOG_INFO_SUCC = 11
-    const val LOG_INFO_RECV = 12
-    const val LOG_INFO_SEND = 13
-    const val LOG_WARNING = 20
-    const val LOG_ERROR = 21
-    const val LOG_FATAL = 22
+    private const val LOG_DEBUG = 0
+    private const val LOG_INFO = 10
+    private const val LOG_INFO_SUCC = 11
+    private const val LOG_INFO_RECV = 12
+    private const val LOG_INFO_SEND = 13
+    private const val LOG_WARNING = 20
+    private const val LOG_ERROR = 21
+    private const val LOG_FATAL = 22
 
     private fun getLogger() = MiraiNative.logger
 
@@ -469,6 +505,7 @@ object NativeLoggerHelper {
             LOG_INFO, LOG_INFO_RECV, LOG_INFO_SUCC, LOG_INFO_SEND -> getLogger().info(
                 c
             )
+
             LOG_WARNING -> getLogger().warning(c)
             LOG_ERROR -> getLogger().error(c)
             LOG_FATAL -> getLogger().error("[FATAL] $c")

@@ -28,10 +28,18 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.util.*
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.command.descriptor.LongValueArgumentParser.findMemberOrFail
 import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.mute
+import net.mamoe.mirai.message.action.BotNudge
+import net.mamoe.mirai.message.action.FriendNudge
+import net.mamoe.mirai.message.action.MemberNudge
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.PokeMessage.Key.ChuoYiChuo
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
@@ -55,7 +63,7 @@ object ChainCodeConverter {
         return if (comma) s.replace(",", "&#44;") else s
     }
 
-    fun String.unescape(comma: Boolean): String {
+    private fun String.unescape(comma: Boolean): String {
         val s = replace("&amp;", "&")
             .replace("&#91;", "[")
             .replace("&#93;", "]")
@@ -100,12 +108,15 @@ object ChainCodeConverter {
                         }
                     }
                 }
+
                 "face" -> {
                     return Face(args["id"]!!.toInt())
                 }
+
                 "emoji" -> {
                     return PlainText(String(Character.toChars(args["id"]!!.toInt())))
                 }
+
                 "image" -> {
                     var image: Image? = null
                     if (args.containsKey("file")) {
@@ -129,6 +140,7 @@ object ChainCodeConverter {
                     }
                     return MSG_EMPTY
                 }
+
                 "share" -> {
                     return RichMessageHelper.share(
                         args["url"]!!,
@@ -137,6 +149,7 @@ object ChainCodeConverter {
                         args["image"]
                     )
                 }
+
                 "contact" -> {
                     return if (args["type"] == "qq") {
                         RichMessageHelper.contactQQ(args["id"]!!.toLong())
@@ -144,6 +157,7 @@ object ChainCodeConverter {
                         RichMessageHelper.contactGroup(args["id"]!!.toLong())
                     }
                 }
+
                 "music" -> {
                     when (args["type"]) {
                         "qq" -> return QQMusic.send(args["id"]!!)
@@ -157,9 +171,11 @@ object ChainCodeConverter {
                         )
                     }
                 }
+
                 "shake" -> {
                     return ChuoYiChuo
                 }
+
                 "poke" -> {
                     PokeMessage.values.forEach {
                         if (it.pokeType == args["type"]!!.toInt() && it.id == args["id"]!!.toInt()) {
@@ -168,18 +184,23 @@ object ChainCodeConverter {
                     }
                     return MSG_EMPTY
                 }
+
                 "xml" -> {
                     return xmlMessage(args["data"]!!)
                 }
+
                 "json" -> {
                     return jsonMessage(args["data"]!!)
                 }
+
                 "app" -> {
                     return LightApp(args["data"]!!)
                 }
+
                 "rich" -> {
                     return SimpleServiceMessage(args["id"]!!.toInt(), args["data"]!!)
                 }
+
                 "record" -> {
                     var rec: Audio? = null
                     if (contact is AudioSupported) {
@@ -199,11 +220,61 @@ object ChainCodeConverter {
                     }
                     return rec ?: MSG_EMPTY
                 }
+
                 "dice" -> {
                     return Dice(args["type"]!!.toInt())
                 }
+
+                "recall" -> {
+                    if (args.containsKey("id")) {
+                        CacheManager.getMessage(args["id"]!!.toInt())!!.recall()
+                    }
+                    return MSG_EMPTY
+                }
+
+                "nudge" -> {
+                    if (args.containsKey("qq")) {
+                        if (contact is Group) {
+                            val member = contact.get(args["qq"]!!.toLong())
+                            if (member != null) {
+                                MemberNudge(member).sendTo(contact)
+                            }
+                        } else {
+                            val friend = MiraiNative.bot.getFriend(args["qq"]!!.toLong())
+                            if (friend != null) {
+                                FriendNudge(friend).sendTo(contact!!)
+                            }
+                        }
+                    } else {
+                        BotNudge(Bot.instances.first()).sendTo(contact!!)
+                    }
+                }
+
+                "mute" -> {
+                    if (args.containsKey("qq")) {
+                        if (contact is Group) {
+                            val member = contact.get(args["qq"]!!.toLong())
+                            if (member != null) {
+                                if (args.containsKey("time")) {
+                                    var time = args["time"]?.toInt()?:0
+                                    if(time<0) {
+                                        time=0
+                                    }
+                                    if(time>2592000) {
+                                        time=2592000
+                                    }
+                                    member.mute(time)
+                                }else{
+                                    member.mute(0)
+                                }
+                            }
+                        }
+                    }
+                    return MSG_EMPTY
+                }
+
                 else -> {
-                    MiraiNative.logger.debug("不支持的 CQ码：${parts[0]}")
+                    MiraiNative.logger.warning("不支持的 CQ码：${parts[0]}")
                 }
             }
             return MSG_EMPTY
@@ -229,14 +300,16 @@ object ChainCodeConverter {
                             1 -> "[CQ:json,data=$content]"
                             else -> "[CQ:rich,data=${content},id=${it.serviceId}]"
                         }
+
                         else -> "[CQ:rich,data=$content]" // Which is impossible
                     }
                 }
+
                 is Audio -> "[CQ:record,file=${it.filename}.mnrec]"
                 is PokeMessage -> "[CQ:poke,id=${it.id},type=${it.pokeType},name=${it.name}]"
                 is FlashImage -> "[CQ:image,file=${it.image.imageId}.mnimg,type=flash]"
-                is Dice -> "[CQ:dice,type=${it.value}]"
                 is MarketFace -> "[CQ:bface,id=${it.id},name=${it.name}]"
+                is Dice -> "[CQ:dice,type=${it.value}]"
                 else -> ""//error("不支持的消息类型：${it::class.simpleName}")
             }
         }

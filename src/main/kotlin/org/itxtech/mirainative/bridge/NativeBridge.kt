@@ -226,4 +226,28 @@ object NativeBridge {
             Bridge.pEvFriendAdd(id, it, subType, time, fromAccount)
         }
     }
+
+    fun eventFriendRecall(subType: Int, time: Int, fromAccount: Long, msg: String) {
+        event(Event.EVENT_FRIEND_RECALL, "_eventRecall_Friend") {
+            Bridge.pEvFriendRecall(id, it, subType, time, fromAccount, msg.toNative())
+        }
+    }
+
+    fun eventGroupRecall(subType: Int, time: Int, fromGroup: Long, fromAccount: Long, beingOperateAccount: Long, msg: String) {
+        event(Event.EVENT_GROUP_RECALL, "_eventRecall_Group") {
+            Bridge.pEvGroupRecall(id, it, subType, time, fromGroup, fromAccount, beingOperateAccount, msg.toNative())
+        }
+    }
+
+    fun eventGroupNudge(subType: Int, fromGroup: Long, fromAccount: Long, benigOperateAccount: Long, action: String, suffix: String) {
+        event(Event.EVENT_GROUP_NUDGE, "_eventNudge_Group"){
+            Bridge.pEvGroupNudge(id,it,subType,fromGroup,fromAccount,benigOperateAccount,action.toNative(),suffix.toNative())
+        }
+    }
+
+    fun eventFriendNudge(subType: Int, fromAccount: Long, beingOperateAccount: Long, action: String, suffix: String) {
+        event(Event.EVENT_FRIEND_NUDGE,"_eventNudge_Friend"){
+            Bridge.pEvFriendNudge(id,it,subType,fromAccount,beingOperateAccount,action.toNative(),suffix.toNative())
+        }
+    }
 }

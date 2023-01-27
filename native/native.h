@@ -26,6 +26,10 @@ typedef int32_t (__stdcall* EvGroupBan)(int32_t, int32_t, int64_t, int64_t, int6
 typedef int32_t (__stdcall* EvRequestAddGroup)(int32_t, int32_t, int64_t, int64_t, const char*, const char*);
 typedef int32_t (__stdcall* EvRequestAddFriend)(int32_t, int32_t, int64_t, const char*, const char*);
 typedef int32_t (__stdcall* EvFriendAdd)(int32_t, int32_t, int64_t);
+typedef int32_t (__stdcall* EvFriendRecall)(int32_t, int32_t, int64_t, const char*);
+typedef int32_t (__stdcall* EvGroupRecall)(int32_t, int32_t, int64_t, int64_t, int64_t, const char*);
+typedef int32_t (__stdcall* EvGroupNudge) (int32_t, int64_t, int64_t, int64_t, const char*, const char*);
+typedef int32_t (__stdcall* EvFriendNudge) (int32_t, int64_t, int64_t, const char*, const char*);
 
 struct native_plugin
 {

@@ -33,11 +33,8 @@ import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupTempMessageEvent
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.message.data.OnlineAudio
-import net.mamoe.mirai.message.data.source
 import org.itxtech.mirainative.MiraiNative
 
 class CacheWrapper<T>(
@@ -79,23 +76,23 @@ object CacheManager {
 
     fun getEvent(id: String): BotEvent? = evCache.getObj(id.toInt()).also { evCache.remove(id.toInt()) }
 
-    fun cacheMessage(source: MessageSource, id: Int = nextId(), chain: MessageChain? = null): Int {
-        msgCache[id] = source
+    fun cacheMessage(source: MessageSource, chain: MessageChain? = null): Int {
+        msgCache[source.ids[0]] = source
         chain?.forEach {
             if (it is OnlineAudio) {
                 records[it.filename] = it
             }
         }
-        return id
+        return source.ids[0]
     }
 
     fun cacheMember(member: User) {
         senders[member.id] = member
     }
 
-    fun cacheTempMessage(message: GroupTempMessageEvent, id: Int = nextId()): Int {
+    fun cacheTempMessage(message: GroupTempMessageEvent): Int {
         cacheMember(message.sender)
-        return cacheMessage(message.message.source, id, message.message)
+        return cacheMessage(message.message.source, message.message)
     }
 
     fun cacheAnonymousMember(ev: GroupMessageEvent) {

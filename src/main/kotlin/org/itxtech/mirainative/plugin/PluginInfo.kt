@@ -70,6 +70,12 @@ data class Event(
 
         const val EVENT_REQUEST_FRIEND = 301
         const val EVENT_REQUEST_GROUP = 302
+
+        const val EVENT_FRIEND_RECALL = 401
+        const val EVENT_GROUP_RECALL = 402
+
+        const val EVENT_GROUP_NUDGE = 501
+        const val EVENT_FRIEND_NUDGE = 502
     }
 }
 

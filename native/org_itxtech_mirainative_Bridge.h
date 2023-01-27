@@ -35,6 +35,22 @@ extern "C" {
 #define org_itxtech_mirainative_Bridge_GROUP_UNMUTE 1L
 #undef org_itxtech_mirainative_Bridge_GROUP_MUTE
 #define org_itxtech_mirainative_Bridge_GROUP_MUTE 2L
+#undef org_itxtech_mirainative_Bridge_GROUP_RECALL_SELF
+#define org_itxtech_mirainative_Bridge_GROUP_RECALL_SELF 1L
+#undef org_itxtech_mirainative_Bridge_GROUP_RECALL_OTHER
+#define org_itxtech_mirainative_Bridge_GROUP_RECALL_OTHER 2L
+#undef org_itxtech_mirainative_Bridge_GROUP_BOT_NUDGE_SELF
+#define org_itxtech_mirainative_Bridge_GROUP_BOT_NUDGE_SELF 11L
+#undef org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_SELF
+#define org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_SELF 12L
+#undef org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_BOT
+#define org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_BOT 21L
+#undef org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_OTHER
+#define org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_OTHER 22L
+#undef org_itxtech_mirainative_Bridge_FRIEND_NUDGE_BOT
+#define org_itxtech_mirainative_Bridge_FRIEND_NUDGE_BOT 1L
+#undef org_itxtech_mirainative_Bridge_FRIEND_NUDGE_FRIEND
+#define org_itxtech_mirainative_Bridge_FRIEND_NUDGE_FRIEND 2L
 /*
  * Class:     org_itxtech_mirainative_Bridge
  * Method:    shutdown
@@ -154,6 +170,38 @@ JNIEXPORT jbyteArray JNICALL Java_org_itxtech_mirainative_Bridge_callStringMetho
  */
 JNIEXPORT void JNICALL Java_org_itxtech_mirainative_Bridge_processMessage
   (JNIEnv *, jclass);
+
+/*
+ * Class:     org_itxtech_mirainative_Bridge
+ * Method:    pEvFriendRecall
+ * Signature: (I[BIIJ[B)I
+ */
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendRecall
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jint, jlong, jbyteArray);
+
+/*
+ * Class:     org_itxtech_mirainative_Bridge
+ * Method:    pEvGroupRecall
+ * Signature: (I[BIIJJJ[B)I
+ */
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupRecall
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jint, jlong, jlong, jlong, jbyteArray);
+
+/*
+ * Class:     org_itxtech_mirainative_Bridge
+ * Method:    pEvGroupNudge
+ * Signature: (I[BIJJJ[B[B)I
+ */
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupNudge
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jlong, jlong, jlong, jbyteArray, jbyteArray);
+
+/*
+ * Class:     org_itxtech_mirainative_Bridge
+ * Method:    pEvFriendNudge
+ * Signature: (I[BIJJ[B[B)I
+ */
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendNudge
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jlong, jlong, jbyteArray, jbyteArray);
 
 #ifdef __cplusplus
 }

@@ -32,6 +32,7 @@ import net.mamoe.mirai.contact.announcement.Announcement.Companion.publishAnnoun
 import net.mamoe.mirai.contact.announcement.AnnouncementParameters
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSourceKind
+//import net.mamoe.mirai.message.data.ids
 import net.mamoe.mirai.message.data.kind
 import org.itxtech.mirainative.MiraiNative
 import org.itxtech.mirainative.bridge.MiraiBridge.call
@@ -49,7 +50,7 @@ object MiraiImpl {
                         val f = MiraiNative.bot.getFriend(src.fromId)
                         val chain = src.quote() + ChainCodeConverter.codeToChain(message, f)
                         f?.sendMessage(chain)?.apply {
-                            CacheManager.cacheMessage(source, internalId, chain)
+                            CacheManager.cacheMessage(source, chain)
                         }
                     }
                 } else {
@@ -57,7 +58,7 @@ object MiraiImpl {
                     if (src.fromId != MiraiNative.bot.id) {
                         val chain = src.quote() + ChainCodeConverter.codeToChain(message, group)
                         group?.sendMessage(chain)?.apply {
-                            CacheManager.cacheMessage(source, internalId, chain)
+                            CacheManager.cacheMessage(source, chain)
                         }
                     }
                 }

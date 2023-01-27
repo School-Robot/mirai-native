@@ -339,6 +339,24 @@ CQAPI(int32_t, CQ_setGroupAnonymousBan, 24)(int32_t plugin_id, int64_t group, co
 	return result;
 }
 
+CQAPI(int32_t, CQ_sendFriendNudge, 20)(int32_t plugin_id, int64_t acct, int64_t target)
+{
+	auto env = attach_java();
+	auto method = env->GetStaticMethodID(bclz, "sendFriendNudge", "(IJJ)I");
+	auto result = env->CallStaticIntMethod(bclz, method, plugin_id, acct, target);
+	detach_java();
+	return result;
+}
+
+CQAPI(int32_t, CQ_sendGroupNudge, 20)(int32_t plugin_id, int64_t acct, int64_t target)
+{
+	auto env = attach_java();
+	auto method = env->GetStaticMethodID(bclz, "sendGroupNudge", "(IJJ)I");
+	auto result = env->CallStaticIntMethod(bclz, method, plugin_id, acct, target);
+	detach_java();
+	return result;
+}
+
 // Legacy
 
 CQAPI(const char*, CQ_getCookies, 4)(int32_t plugin_id)

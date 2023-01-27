@@ -25,10 +25,12 @@
 package org.itxtech.mirainative.manager
 
 import net.mamoe.mirai.contact.AnonymousMember
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.globalEventChannel
-import net.mamoe.mirai.message.data.source
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import org.itxtech.mirainative.Bridge
 import org.itxtech.mirainative.MiraiNative
@@ -55,7 +57,7 @@ object EventManager {
                 launchEvent {
                     NativeBridge.eventPrivateMessage(
                         Bridge.PRI_MSG_SUBTYPE_FRIEND,
-                        CacheManager.cacheMessage(message.source, chain = message),
+                        CacheManager.cacheMessage(message.source, message),
                         sender.id,
                         ChainCodeConverter.chainToCode(message),
                         0
@@ -69,7 +71,7 @@ object EventManager {
                 launchEvent {
                     NativeBridge.eventGroupMessage(
                         1,
-                        CacheManager.cacheMessage(message.source, chain = message),
+                        CacheManager.cacheMessage(message.source, message),
                         group.id,
                         sender.id,
                         if (sender is AnonymousMember) (sender as AnonymousMember).anonymousId else "",//可能不兼容某些插件
@@ -93,11 +95,114 @@ object EventManager {
                 launchEvent {
                     NativeBridge.eventPrivateMessage(
                         Bridge.PRI_MSG_SUBTYPE_ONLINE_STATE,
-                        CacheManager.cacheMessage(message.source, chain = message),
+                        CacheManager.cacheMessage(message.source, message),
                         sender.id,
                         ChainCodeConverter.chainToCode(message),
                         0
                     )
+                }
+            }
+
+            // 撤回事件
+            subscribeAlways<MessageRecallEvent.FriendRecall> {
+                launchEvent {
+                    NativeBridge.eventPrivateMessage(
+                        Bridge.PRI_MSG_SUBTYPE_ONLINE_STATE,
+                        it.messageIds[0],
+                        operatorId,
+                        "[CQ:recall,msg="+ChainCodeConverter.chainToCode(CacheManager.getMessage(it.messageIds[0])?.originalMessage?: buildMessageChain { +PlainText("") })+"]",
+                        0
+                    )
+                    NativeBridge.eventFriendRecall(
+                        1,
+                        it.messageTime,
+                        operatorId,
+                        ChainCodeConverter.chainToCode(CacheManager.getMessage(it.messageIds[0])?.originalMessage?: buildMessageChain { +PlainText("") })
+                    )
+                }
+            }
+
+            subscribeAlways<MessageRecallEvent.GroupRecall> {
+                launchEvent {
+                    NativeBridge.eventGroupMessage(
+                        1,
+                        it.messageIds[0],
+                        group.id,
+                        operatorOrBot.id,
+                        if (operatorOrBot is AnonymousMember) (operatorOrBot as AnonymousMember).anonymousId else "",//可能不兼容某些插件
+                        "[CQ:recall,operator="+operatorOrBot.id.toString()+",author="+authorId.toString()+",msg="+ChainCodeConverter.chainToCode(CacheManager.getMessage(it.messageIds[0])?.originalMessage?: buildMessageChain { +PlainText("") })+"]",
+                        0
+                    )
+                    NativeBridge.eventGroupRecall(
+                        when(operatorOrBot.id==authorId){
+                            true->Bridge.GROUP_RECALL_SELF
+                            false->Bridge.GROUP_RECALL_OTHER
+                        },
+                        it.messageTime,
+                        group.id,
+                        operatorOrBot.id,
+                        authorId,
+                        ChainCodeConverter.chainToCode(CacheManager.getMessage(it.messageIds[0])?.originalMessage?: buildMessageChain { +PlainText("") })
+                    )
+                }
+            }
+
+            // 戳一戳事件
+            subscribeAlways<NudgeEvent> {
+                launchEvent {
+                    when(subject){
+                        is Group->{
+                            NativeBridge.eventGroupNudge(
+                                when(from.id==target.id){
+                                    true->{
+                                        when(target.id==bot.id){
+                                            true->Bridge.GROUP_BOT_NUDGE_SELF
+                                            false->Bridge.GROUP_OTHER_NUDGE_SELF
+                                        }
+                                    }
+                                    false->{
+                                        when(target.id==bot.id){
+                                            true->Bridge.GROUP_OTHER_NUDGE_BOT
+                                            false->Bridge.GROUP_OTHER_NUDGE_OTHER
+                                        }
+                                    }
+                                },
+                                subject.id,
+                                from.id,
+                                target.id,
+                                action,
+                                suffix
+                            )
+                            NativeBridge.eventGroupMessage(
+                                1,
+                                0,
+                                subject.id,
+                                from.id,
+                                if (from is AnonymousMember) (from as AnonymousMember).anonymousId else "",//可能不兼容某些插件
+                                "[CQ:nudge,from="+from.id.toString()+",target="+target.id.toString()+",subject="+subject.id+",action="+action+",suffix="+suffix+"]",
+                                0
+                            )
+                        }
+                        else->{
+                            NativeBridge.eventFriendNudge(
+                                when(subject.id==bot.id){
+                                    true->Bridge.FRIEND_NUDGE_BOT
+                                    false->Bridge.FRIEND_NUDGE_FRIEND
+                                },
+                                from.id,
+                                target.id,
+                                action,
+                                suffix
+                            )
+                            NativeBridge.eventPrivateMessage(
+                                Bridge.PRI_MSG_SUBTYPE_ONLINE_STATE,
+                                0,
+                                subject.id,
+                                "[CQ:nudge,from="+from.id.toString()+",target="+target.id.toString()+",subject="+subject.id+",action="+action+",suffix="+suffix+"]",
+                                0
+                            )
+                        }
+                    }
                 }
             }
 
@@ -264,5 +369,5 @@ object EventManager {
         }
     }
 
-    fun getTimestamp() = System.currentTimeMillis().toInt()
+    private fun getTimestamp() = System.currentTimeMillis().toInt()
 }

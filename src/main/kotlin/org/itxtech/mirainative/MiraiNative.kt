@@ -44,6 +44,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.util.*
 import java.util.jar.Manifest
 
 object MiraiNative : KotlinPlugin(
@@ -138,6 +139,7 @@ object MiraiNative : KotlinPlugin(
         File(recDataPath, "MIRAI_NATIVE_RECORD_DATA").createNewFile()
     }
 
+
     fun getDataFile(type: String, name: String): ExternalResource? {
         if (name.startsWith("base64://")) {
             return name.split("base64://", limit = 2)[1].decodeBase64Bytes().toExternalResource()
@@ -182,7 +184,7 @@ object MiraiNative : KotlinPlugin(
         launch {
             while (isActive) {
                 CacheManager.checkCacheLimit(ConfigMan.config.cacheExpiration)
-                delay(60000L) //1min
+                delay(60000L) //2min
             }
         }
     }

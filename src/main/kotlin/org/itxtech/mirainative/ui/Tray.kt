@@ -187,7 +187,7 @@ object Tray {
                             }
                         })
 
-                        if (plugin.pluginInfo != null && plugin.pluginInfo!!.menu.count() > 0) {
+                        if (plugin.pluginInfo != null && plugin.pluginInfo!!.menu.isNotEmpty()) {
                             add(Menu(plugin.pluginInfo!!.name).apply {
                                 plugin.pluginInfo!!.menu.forEach { m ->
                                     val item = MenuItem(m.name)

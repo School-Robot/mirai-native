@@ -91,7 +91,7 @@ object PluginManager {
         return false
     }
 
-    fun readPlugin(file: File) {
+    private fun readPlugin(file: File) {
         plugins.values.forEach {
             if (it.loaded && it.file == file) {
                 MiraiNative.logger.error("DLL ${file.absolutePath} 已被加载，无法重复加载。")
@@ -106,7 +106,7 @@ object PluginManager {
         }
     }
 
-    fun loadPlugin(plugin: NativePlugin) {
+    private fun loadPlugin(plugin: NativePlugin) {
         if (plugin.loaded) {
             return
         }

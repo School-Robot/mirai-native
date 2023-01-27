@@ -24,8 +24,8 @@
 
 package org.itxtech.mirainative.util
 
-import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.client.request.*
 import kotlinx.serialization.json.*
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MusicKind
@@ -60,11 +60,12 @@ object Music {
 object QQMusic : MusicProvider() {
     suspend fun search(name: String, page: Int, cnt: Int): JsonElement {
         val result =
-            http.get("https://c.y.qq.com/soso/fcgi-bin/client_search_cp?aggr=1&cr=1&flag_qc=0&p=$page&n=$cnt&w=$name").bodyAsText()
+            http.get("https://c.y.qq.com/soso/fcgi-bin/client_search_cp?aggr=1&cr=1&flag_qc=0&p=$page&n=$cnt&w=$name")
+                .bodyAsText()
         return Json.parseToJsonElement(result.substring(8, result.length - 1))
     }
 
-    suspend fun getPlayUrl(mid: String): String {
+    private suspend fun getPlayUrl(mid: String): String {
         val result = http.get(
             "https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg?&jsonpCallback=MusicJsonCallback&cid=205361747&songmid=" +
                     mid + "&filename=C400" + mid + ".m4a&guid=7549058080"
@@ -77,7 +78,7 @@ object QQMusic : MusicProvider() {
         return ""
     }
 
-    suspend fun getSongInfo(id: String = "", mid: String = ""): JsonObject {
+    private suspend fun getSongInfo(id: String = "", mid: String = ""): JsonObject {
         val result = http.get(
             "https://u.y.qq.com/cgi-bin/musicu.fcg?format=json&inCharset=utf8&outCharset=utf-8&notice=0&" +
                     "platform=yqq.json&needNewCode=0&data=" +

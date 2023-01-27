@@ -51,6 +51,16 @@ object Bridge {
     const val GROUP_UNMUTE = 1
     const val GROUP_MUTE = 2
 
+    const val GROUP_RECALL_SELF = 1
+    const val GROUP_RECALL_OTHER = 2
+
+    const val GROUP_BOT_NUDGE_SELF = 11
+    const val GROUP_OTHER_NUDGE_SELF = 12
+    const val GROUP_OTHER_NUDGE_BOT = 21
+    const val GROUP_OTHER_NUDGE_OTHER = 22
+    const val FRIEND_NUDGE_BOT = 1
+    const val FRIEND_NUDGE_FRIEND = 2
+
     // Helper
 
     fun syncWorkingDir() = setCurrentDirectory(System.getProperty("user.dir").toNative())
@@ -255,6 +265,14 @@ object Bridge {
     fun setGroupAnonymousBan(pluginId: Int, group: Long, id: ByteArray, duration: Long) =
         MiraiBridge.setGroupAnonymousBan(pluginId, group, id.fromNative(), duration)
 
+    @JvmStatic
+    fun sendFriendNudge(pluginId: Int, account: Long, target: Long) =
+        MiraiBridge.sendFriendNudge(pluginId, account, target)
+
+    @JvmStatic
+    fun sendGroupNudge(pluginId: Int, group: Long, target: Long) =
+        MiraiBridge.sendFriendNudge(pluginId, group, target)
+
     // Placeholder methods which mirai hasn't supported yet
 
     @JvmStatic
@@ -303,6 +321,25 @@ object Bridge {
     @JvmStatic
     fun setGroupEntranceAnnouncement(pluginId: Int, group: Long, a: ByteArray) =
         MiraiImpl.setGroupEntranceAnnouncement(pluginId, group, a.fromNative())
+
+    @JvmStatic
+    external fun pEvFriendRecall(pluginId: Int, method: ByteArray, subType: Int, time: Int, fromAccount: Long, msg: ByteArray) : Int
+
+    @JvmStatic
+    external fun pEvGroupRecall(pluginId: Int, method: ByteArray, subType: Int, time: Int, fromGroup: Long, fromAccount: Long, beingOperateAccount: Long, msg: ByteArray) : Int
+
+    @JvmStatic
+    external fun pEvGroupNudge(pluginId: Int, method: ByteArray, subType: Int, fromGroup: Long, fromAccount: Long, benigOperateAccount: Long, action: ByteArray, suffix: ByteArray) : Int
+    @JvmStatic
+    external fun pEvFriendNudge(
+        pluginId: Int,
+        method: ByteArray,
+        subType: Int,
+        fromAccount: Long,
+        beingOperateAccount: Long,
+        action: ByteArray,
+        suffix: ByteArray
+    ) :Int
 
 }
 
