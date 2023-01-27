@@ -40,6 +40,7 @@ import org.itxtech.mirainative.toNative
 import org.itxtech.mirainative.ui.Tray
 import org.itxtech.mirainative.util.NpmHelper
 import java.io.File
+import java.nio.charset.Charset
 
 object PluginManager {
     private val pluginId = atomic(0)
@@ -125,7 +126,7 @@ object PluginManager {
             try {
                 plugin.pluginInfo = MiraiNative.json.decodeFromString(
                     PluginInfo.serializer(),
-                    if (json.exists()) json.readText() else NativeBridge.getPluginInfo(plugin)
+                    if (json.exists()) parseJson(json) else NativeBridge.getPluginInfo(plugin)
                 )
             } catch (ignored: Throwable) {
             }
@@ -135,6 +136,48 @@ object PluginManager {
             plugin.loaded = true
             NativeBridge.updateInfo(plugin)
         }
+    }
+
+    fun parseJson(json: File):String{
+        val b=json.readBytes()
+        if(b[0].toInt()==-1&&b[1].toInt()==-2){
+            return b.toString(Charset.forName("UTF-16"))
+        }else if(b[0].toInt()==-2&&b[1].toInt()==-1){
+            return b.toString(Charset.forName("Unicode"))
+        }else if(b[0].toInt()==-17&&b[1].toInt()==-69&&b[2].toInt()==-65){
+            return b.toString(Charset.forName("UTF-8"))
+        }
+        var nb=0
+        for (i in b){
+            if(nb==0) {
+                if (i.toInt() < 0) {
+                    nb = if (i.toInt() >= -4 && i.toInt() <= -3) {
+                        6
+                    } else if (i.toInt() >= -8) {
+                        5
+                    } else if (i.toInt() >= -16) {
+                        4
+                    } else if (i.toInt() >= -32) {
+                        3
+                    } else if (i.toInt() >= -64) {
+                        2
+                    } else {
+                        return b.toString(Charset.forName("GBK"))
+                    }
+                    nb--
+                }
+            }else{
+                if(i.toInt()<=-65){
+                    nb--
+                }else{
+                    return b.toString(Charset.forName("GBK"))
+                }
+            }
+        }
+        if(nb>0){
+            return b.toString(Charset.forName("GBK"))
+        }
+        return b.toString(Charset.forName("UTF-8"))
     }
 
     fun unloadPlugin(plugin: NativePlugin, remove: Boolean = true) {
