@@ -51,7 +51,7 @@ inline operator fun <K, V> MutableMap<K, CacheWrapper<V>>.set(key: K, value: V) 
 inline fun <K, V> MutableMap<K, CacheWrapper<V>>.getObj(key: K): V? = get(key)?.obj
 
 inline fun <K, V> MutableMap<K, CacheWrapper<V>>.checkExpiration(exp: Int) {
-    values.removeIf { it.creationTime + exp >= System.currentTimeMillis() }
+    values.removeIf { it.creationTime + exp <= System.currentTimeMillis() }
 }
 
 object CacheManager {

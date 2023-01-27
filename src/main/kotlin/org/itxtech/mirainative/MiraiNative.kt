@@ -184,7 +184,7 @@ object MiraiNative : KotlinPlugin(
         launch {
             while (isActive) {
                 CacheManager.checkCacheLimit(ConfigMan.config.cacheExpiration)
-                delay(60000L) //2min
+                delay(120000L) //2min
             }
         }
     }
