@@ -138,7 +138,7 @@ object PluginManager {
         }
     }
 
-    fun parseJson(json: File):String{
+    private fun parseJson(json: File):String{
         val b=json.readBytes()
         if(b[0].toInt()==-1&&b[1].toInt()==-2){
             return b.toString(Charset.forName("UTF-16"))

@@ -11,3 +11,5 @@ out
 epl-test/*.dll
 epl-test/*.bak
 epl-test/*.ec
+CQPSDK/*.bak
+CQPSDK/*.ec

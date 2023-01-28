@@ -46,6 +46,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.action.UserNudge
+import net.mamoe.mirai.message.data.AudioCodec
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.isContentEmpty
@@ -186,7 +187,7 @@ object MiraiBridge {
         return 0
     }
 
-    fun setGroupSpecialTitle(pluginId: Int, group: Long, member: Long, title: String, duration: Long) =
+    fun setGroupSpecialTitle(pluginId: Int, group: Long, member: Long, title: String) =
         call("CQ_setGroupSpecialTitle", pluginId, 0) {
             MiraiNative.bot.getGroup(group)?.get(member)?.specialTitle = title
             return 0
@@ -276,14 +277,14 @@ object MiraiBridge {
         }
     }
 
-    fun setGroupAddRequest(pluginId: Int, requestId: String, reqType: Int, type: Int, reason: String) =
+    fun setGroupAddRequest(pluginId: Int, requestId: String, reqType: Int, type: Int, reason: String, blacklist: Boolean) =
         call("CQ_setGroupAddRequestV2", pluginId, 0) {
             MiraiNative.launch {
                 if (reqType == Bridge.REQUEST_GROUP_APPLY) {
                     (CacheManager.getEvent(requestId) as? MemberJoinRequestEvent)?.apply {
                         when (type) {//1通过，2拒绝，3忽略
                             1 -> accept()
-                            2 -> reject(message = reason)
+                            2 -> reject(message = reason, blackList = blacklist)
                             3 -> ignore()
                         }
                     }
@@ -299,13 +300,13 @@ object MiraiBridge {
             return 0
         }
 
-    fun setFriendAddRequest(pluginId: Int, requestId: String, type: Int, remark: String) =
+    fun setFriendAddRequest(pluginId: Int, requestId: String, type: Int, blacklist: Boolean) =
         call("CQ_setFriendAddRequest", pluginId, 0) {
             MiraiNative.launch {
                 (CacheManager.getEvent(requestId) as? NewFriendRequestEvent)?.apply {
                     when (type) {//1通过，2拒绝
                         1 -> accept()
-                        2 -> reject()
+                        2 -> reject(blacklist)
                     }
                 }
             }
@@ -346,7 +347,7 @@ object MiraiBridge {
             }
         }
 
-    fun getRecord(pluginId: Int, record: String, format: String) =
+    fun getRecord(pluginId: Int, record: String) =
         call("CQ_getRecordV2", pluginId, "", "Error occurred when plugin %0 downloading record $record") {
             return runBlocking {
                 val rec = CacheManager.getRecord(record.replace(".mnrec", ""))
@@ -354,7 +355,7 @@ object MiraiBridge {
                     val file = File(
                         MiraiNative.recDataPath.absolutePath + File.separatorChar +
                                 BigInteger(1, rec.fileMd5).toString(16)
-                                    .padStart(32, '0') + ".silk"
+                                    .padStart(32, '0') + "."+rec.codec.formatName
                     )
                     client.prepareGet(rec.urlForDownload).execute { response ->
                         if (response.status.isSuccess()) {

@@ -121,13 +121,13 @@ CQAPI(int32_t, CQ_setGroupLeave, 16)(int32_t plugin_id, int64_t group, BOOL dism
 	return result;
 }
 
-CQAPI(int32_t, CQ_setGroupSpecialTitle, 32)(int32_t plugin_id, int64_t group, int64_t member,
-                                            const char* title, int64_t duration)
+CQAPI(int32_t, CQ_setGroupSpecialTitle, 24)(int32_t plugin_id, int64_t group, int64_t member,
+                                            const char* title)
 {
 	auto env = attach_java();
-	auto method = env->GetStaticMethodID(bclz, "setGroupSpecialTitle", "(IJJ[BJ)I");
+	auto method = env->GetStaticMethodID(bclz, "setGroupSpecialTitle", "(IJJ[B)I");
 	auto jstr = CharsToByteArray(env, title);
-	auto result = env->CallStaticIntMethod(bclz, method, plugin_id, group, member, jstr, duration);
+	auto result = env->CallStaticIntMethod(bclz, method, plugin_id, group, member, jstr);
 	env->DeleteLocalRef(jstr);
 	detach_java();
 	return result;
@@ -243,16 +243,14 @@ CQAPI(const char*, CQ_getImage, 8)(int32_t plugin_id, const char* image)
 	return delay_mem_free(r);
 }
 
-CQAPI(const char*, CQ_getRecordV2, 12)(int32_t plugin_id, const char* file, const char* format)
+CQAPI(const char*, CQ_getRecordV2, 8)(int32_t plugin_id, const char* file)
 {
 	auto env = attach_java();
-	auto method = env->GetStaticMethodID(bclz, "getRecord", "(I[B[B)[B");
+	auto method = env->GetStaticMethodID(bclz, "getRecord", "(I[B)[B");
 	auto f = CharsToByteArray(env, file);
-	auto fmt = CharsToByteArray(env, format);
-	auto result = jbyteArray(env->CallStaticObjectMethod(bclz, method, plugin_id, f, fmt));
+	auto result = jbyteArray(env->CallStaticObjectMethod(bclz, method, plugin_id, f));
 	auto r = ByteArrayToChars(env, result);
 	env->DeleteLocalRef(f);
-	env->DeleteLocalRef(fmt);
 	env->DeleteLocalRef(result);
 	detach_java();
 	return delay_mem_free(r);
@@ -292,27 +290,25 @@ CQAPI(int32_t, CQ_setDiscussLeave, 12)(int32_t plugin_id, int64_t group)
 	return result;
 }
 
-CQAPI(int32_t, CQ_setFriendAddRequest, 16)(int32_t plugin_id, const char* id, int32_t type, const char* remark)
+CQAPI(int32_t, CQ_setFriendAddRequest, 16)(int32_t plugin_id, const char* id, int32_t type, BOOL blacklist)
 {
 	auto env = attach_java();
-	auto method = env->GetStaticMethodID(bclz, "setFriendAddRequest", "(I[BI[B)I");
+	auto method = env->GetStaticMethodID(bclz, "setFriendAddRequest", "(I[BIZ)I");
 	auto i = CharsToByteArray(env, id);
-	auto r = CharsToByteArray(env, remark);
-	auto result = env->CallStaticIntMethod(bclz, method, plugin_id, i, type, r);
+	auto result = env->CallStaticIntMethod(bclz, method, plugin_id, i, type, blacklist != FALSE);
 	env->DeleteLocalRef(i);
-	env->DeleteLocalRef(r);
 	detach_java();
 	return result;
 }
 
-CQAPI(int32_t, CQ_setGroupAddRequestV2, 20)(int32_t plugin_id, const char* id, int32_t req_type, int32_t fb_type,
-                                            const char* reason)
+CQAPI(int32_t, CQ_setGroupAddRequestV2, 24)(int32_t plugin_id, const char* id, int32_t req_type, int32_t fb_type,
+                                            const char* reason, BOOL blacklist)
 {
 	auto env = attach_java();
-	auto method = env->GetStaticMethodID(bclz, "setGroupAddRequest", "(I[BII[B)I");
+	auto method = env->GetStaticMethodID(bclz, "setGroupAddRequest", "(I[BII[BZ)I");
 	auto i = CharsToByteArray(env, id);
 	auto r = CharsToByteArray(env, reason);
-	auto result = env->CallStaticIntMethod(bclz, method, plugin_id, i, req_type, fb_type, r);
+	auto result = env->CallStaticIntMethod(bclz, method, plugin_id, i, req_type, fb_type, r, blacklist != FALSE);
 	env->DeleteLocalRef(i);
 	env->DeleteLocalRef(r);
 	detach_java();
@@ -366,7 +362,7 @@ CQAPI(const char*, CQ_getCookies, 4)(int32_t plugin_id)
 
 CQAPI(int32_t, CQ_setGroupAddRequest, 16)(int32_t plugin_id, const char* id, int32_t req_type, int32_t fb_type)
 {
-	return CQ_setGroupAddRequestV2(plugin_id, id, req_type, fb_type, "");
+	return CQ_setGroupAddRequestV2(plugin_id, id, req_type, fb_type, "", FALSE);
 }
 
 CQAPI(int32_t, CQ_sendLike, 12)(int32_t plugin_id, int64_t account)
@@ -379,7 +375,7 @@ CQAPI(int32_t, CQ_setFunctionMark, 8)(int32_t plugin_id, const char* name)
 	return 0;
 }
 
-CQAPI(const char*, CQ_getRecord, 12)(int32_t plugin_id, const char* file, const char* format)
+CQAPI(const char*, CQ_getRecord, 8)(int32_t plugin_id, const char* file)
 {
-	return CQ_getRecordV2(plugin_id, file, format);
+	return CQ_getRecordV2(plugin_id, file);
 }

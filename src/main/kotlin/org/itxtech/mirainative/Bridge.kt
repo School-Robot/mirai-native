@@ -209,8 +209,8 @@ object Bridge {
         MiraiBridge.setGroupLeave(pluginId, group)
 
     @JvmStatic
-    fun setGroupSpecialTitle(pluginId: Int, group: Long, member: Long, title: ByteArray, duration: Long) =
-        MiraiBridge.setGroupSpecialTitle(pluginId, group, member, title.fromNative(), duration)
+    fun setGroupSpecialTitle(pluginId: Int, group: Long, member: Long, title: ByteArray) =
+        MiraiBridge.setGroupSpecialTitle(pluginId, group, member, title.fromNative())
 
     @JvmStatic
     fun setGroupWholeBan(pluginId: Int, group: Long, enable: Boolean) =
@@ -242,12 +242,13 @@ object Bridge {
         requestId: ByteArray,
         reqType: Int,
         fbType: Int,
-        reason: ByteArray
-    ) = MiraiBridge.setGroupAddRequest(pluginId, requestId.fromNative(), reqType, fbType, reason.fromNative())
+        reason: ByteArray,
+        blacklist: Boolean
+    ) = MiraiBridge.setGroupAddRequest(pluginId, requestId.fromNative(), reqType, fbType, reason.fromNative(),blacklist)
 
     @JvmStatic
-    fun setFriendAddRequest(pluginId: Int, requestId: ByteArray, type: Int, remark: ByteArray) =
-        MiraiBridge.setFriendAddRequest(pluginId, requestId.fromNative(), type, remark.fromNative())
+    fun setFriendAddRequest(pluginId: Int, requestId: ByteArray, type: Int, blacklist: Boolean) =
+        MiraiBridge.setFriendAddRequest(pluginId, requestId.fromNative(), type, blacklist)
 
     @JvmStatic
     fun getStrangerInfo(pluginId: Int, account: Long, cache: Boolean) =
@@ -258,8 +259,8 @@ object Bridge {
         MiraiBridge.getImage(pluginId, image.fromNative()).toNative()
 
     @JvmStatic
-    fun getRecord(pluginId: Int, file: ByteArray, format: ByteArray) =
-        MiraiBridge.getRecord(pluginId, file.fromNative(), format.fromNative()).toNative()
+    fun getRecord(pluginId: Int, file: ByteArray) =
+        MiraiBridge.getRecord(pluginId, file.fromNative()).toNative()
 
     @JvmStatic
     fun setGroupAnonymousBan(pluginId: Int, group: Long, id: ByteArray, duration: Long) =
@@ -271,7 +272,7 @@ object Bridge {
 
     @JvmStatic
     fun sendGroupNudge(pluginId: Int, group: Long, target: Long) =
-        MiraiBridge.sendFriendNudge(pluginId, group, target)
+        MiraiBridge.sendGroupNudge(pluginId, group, target)
 
     // Placeholder methods which mirai hasn't supported yet
 
