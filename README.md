@@ -4,7 +4,7 @@ __强大的 `mirai` 原生插件加载器__
 
 Mirai Native 支持所有`stdcall`方式导出方法的`DLL`与 [mirai](https://github.com/mamoe/mirai) 交互。
 
-~~与**大部分**`酷Q`插件兼容~~，**不支持**`CPK`和解包的`DLL`，需获取`DLL`和`JSON`原文件，`JSON`文件**不支持**注释。
+与**大部分**`酷Q`插件兼容，**不支持**`CPK`和解包的`DLL`，需获取`DLL`和`JSON`原文件，`JSON`文件**不支持**注释。
 
 ## `Mirai Native` 仅支持 `Windows 32位 Java`
 

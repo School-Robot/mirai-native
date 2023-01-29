@@ -188,7 +188,7 @@ object MiraiBridge {
     }
 
     fun setGroupSpecialTitle(pluginId: Int, group: Long, member: Long, title: String) =
-        call("CQ_setGroupSpecialTitle", pluginId, 0) {
+        call("CQ_setGroupSpecialTitleV2", pluginId, 0) {
             MiraiNative.bot.getGroup(group)?.get(member)?.specialTitle = title
             return 0
         }
@@ -278,7 +278,7 @@ object MiraiBridge {
     }
 
     fun setGroupAddRequest(pluginId: Int, requestId: String, reqType: Int, type: Int, reason: String, blacklist: Boolean) =
-        call("CQ_setGroupAddRequestV2", pluginId, 0) {
+        call("CQ_setGroupAddRequestV3", pluginId, 0) {
             MiraiNative.launch {
                 if (reqType == Bridge.REQUEST_GROUP_APPLY) {
                     (CacheManager.getEvent(requestId) as? MemberJoinRequestEvent)?.apply {
@@ -301,7 +301,7 @@ object MiraiBridge {
         }
 
     fun setFriendAddRequest(pluginId: Int, requestId: String, type: Int, blacklist: Boolean) =
-        call("CQ_setFriendAddRequest", pluginId, 0) {
+        call("CQ_setFriendAddRequestV2", pluginId, 0) {
             MiraiNative.launch {
                 (CacheManager.getEvent(requestId) as? NewFriendRequestEvent)?.apply {
                     when (type) {//1通过，2拒绝
@@ -348,7 +348,7 @@ object MiraiBridge {
         }
 
     fun getRecord(pluginId: Int, record: String) =
-        call("CQ_getRecordV2", pluginId, "", "Error occurred when plugin %0 downloading record $record") {
+        call("CQ_getRecordV3", pluginId, "", "Error occurred when plugin %0 downloading record $record") {
             return runBlocking {
                 val rec = CacheManager.getRecord(record.replace(".mnrec", ""))
                 if (rec != null) {

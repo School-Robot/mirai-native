@@ -121,7 +121,7 @@ CQAPI(int32_t, CQ_setGroupLeave, 16)(int32_t plugin_id, int64_t group, BOOL dism
 	return result;
 }
 
-CQAPI(int32_t, CQ_setGroupSpecialTitle, 24)(int32_t plugin_id, int64_t group, int64_t member,
+CQAPI(int32_t, CQ_setGroupSpecialTitleV2, 24)(int32_t plugin_id, int64_t group, int64_t member,
                                             const char* title)
 {
 	auto env = attach_java();
@@ -243,7 +243,7 @@ CQAPI(const char*, CQ_getImage, 8)(int32_t plugin_id, const char* image)
 	return delay_mem_free(r);
 }
 
-CQAPI(const char*, CQ_getRecordV2, 8)(int32_t plugin_id, const char* file)
+CQAPI(const char*, CQ_getRecordV3, 8)(int32_t plugin_id, const char* file)
 {
 	auto env = attach_java();
 	auto method = env->GetStaticMethodID(bclz, "getRecord", "(I[B)[B");
@@ -290,7 +290,7 @@ CQAPI(int32_t, CQ_setDiscussLeave, 12)(int32_t plugin_id, int64_t group)
 	return result;
 }
 
-CQAPI(int32_t, CQ_setFriendAddRequest, 16)(int32_t plugin_id, const char* id, int32_t type, BOOL blacklist)
+CQAPI(int32_t, CQ_setFriendAddRequestV2, 16)(int32_t plugin_id, const char* id, int32_t type, BOOL blacklist)
 {
 	auto env = attach_java();
 	auto method = env->GetStaticMethodID(bclz, "setFriendAddRequest", "(I[BIZ)I");
@@ -301,7 +301,7 @@ CQAPI(int32_t, CQ_setFriendAddRequest, 16)(int32_t plugin_id, const char* id, in
 	return result;
 }
 
-CQAPI(int32_t, CQ_setGroupAddRequestV2, 24)(int32_t plugin_id, const char* id, int32_t req_type, int32_t fb_type,
+CQAPI(int32_t, CQ_setGroupAddRequestV3, 24)(int32_t plugin_id, const char* id, int32_t req_type, int32_t fb_type,
                                             const char* reason, BOOL blacklist)
 {
 	auto env = attach_java();
@@ -360,11 +360,6 @@ CQAPI(const char*, CQ_getCookies, 4)(int32_t plugin_id)
 	return CQ_getCookiesV2(plugin_id, "");
 }
 
-CQAPI(int32_t, CQ_setGroupAddRequest, 16)(int32_t plugin_id, const char* id, int32_t req_type, int32_t fb_type)
-{
-	return CQ_setGroupAddRequestV2(plugin_id, id, req_type, fb_type, "", FALSE);
-}
-
 CQAPI(int32_t, CQ_sendLike, 12)(int32_t plugin_id, int64_t account)
 {
 	return CQ_sendLikeV2(plugin_id, account, 1);
@@ -375,7 +370,34 @@ CQAPI(int32_t, CQ_setFunctionMark, 8)(int32_t plugin_id, const char* name)
 	return 0;
 }
 
-CQAPI(const char*, CQ_getRecord, 8)(int32_t plugin_id, const char* file)
+CQAPI(const char*, CQ_getRecordV2, 12)(int32_t plugin_id, const char* file, const char* format)
 {
-	return CQ_getRecordV2(plugin_id, file);
+	return CQ_getRecordV3(plugin_id, file);
+}
+
+CQAPI(const char*, CQ_getRecord, 12)(int32_t plugin_id, const char* file, const char* format)
+{
+	return CQ_getRecordV2(plugin_id, file, format);
+}
+
+CQAPI(int32_t, CQ_setGroupSpecialTitle, 32)(int32_t plugin_id, int64_t group, int64_t member,
+	const char* title, int64_t duration)
+{
+	return CQ_setGroupSpecialTitleV2(plugin_id, group, member, title);
+}
+
+CQAPI(int32_t, CQ_setFriendAddRequest, 16)(int32_t plugin_id, const char* id, int32_t type, const char* remark)
+{
+	return CQ_setFriendAddRequestV2(plugin_id, id, type, FALSE);
+}
+
+CQAPI(int32_t, CQ_setGroupAddRequestV2, 20)(int32_t plugin_id, const char* id, int32_t req_type, int32_t fb_type,
+	const char* reason)
+{
+	return CQ_setGroupAddRequestV3(plugin_id, id, req_type, fb_type, reason, FALSE);
+}
+
+CQAPI(int32_t, CQ_setGroupAddRequest, 16)(int32_t plugin_id, const char* id, int32_t req_type, int32_t fb_type)
+{
+	return CQ_setGroupAddRequestV2(plugin_id, id, req_type, fb_type, "");
 }
