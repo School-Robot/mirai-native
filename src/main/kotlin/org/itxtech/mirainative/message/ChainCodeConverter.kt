@@ -29,15 +29,12 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.util.*
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.descriptor.LongValueArgumentParser.findMemberOrFail
 import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.mute
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.MemberNudge
-import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.PokeMessage.Key.ChuoYiChuo
@@ -264,13 +261,19 @@ object ChainCodeConverter {
                                         time=2592000
                                     }
                                     member.mute(time)
-                                }else{
-                                    member.mute(0)
                                 }
                             }
                         }
                     }
                     return MSG_EMPTY
+                }
+
+                "unmute" -> {
+                    if(args.containsKey("qq")){
+                        if(contact is Group) {
+                            contact.get(args["qq"]!!.toLong())?.unmute()
+                        }
+                    }
                 }
 
                 else -> {
