@@ -1,4 +1,4 @@
-f=open(r"build\classes\Bridge.java","r")
+f=open("Bridge.java","r")
 lines=f.readlines()
 f.close()
 java="package org.itxtech.mirainative;"
@@ -18,6 +18,6 @@ for i in lines:
             java+=tmp1[0]+' arg'+str(len(tmp)-1)+')'+tmp1[1]
             java+='\n'
 java+="}"
-f=open(r"build\classes\Bridge.java","w")
+f=open("Bridge.java","w")
 f.write(java)
 f.close()

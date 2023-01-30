@@ -7,50 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef org_itxtech_mirainative_Bridge_PRI_MSG_SUBTYPE_FRIEND
-#define org_itxtech_mirainative_Bridge_PRI_MSG_SUBTYPE_FRIEND 11L
-#undef org_itxtech_mirainative_Bridge_PRI_MSG_SUBTYPE_ONLINE_STATE
-#define org_itxtech_mirainative_Bridge_PRI_MSG_SUBTYPE_ONLINE_STATE 1L
-#undef org_itxtech_mirainative_Bridge_PRI_MSG_SUBTYPE_GROUP
-#define org_itxtech_mirainative_Bridge_PRI_MSG_SUBTYPE_GROUP 2L
-#undef org_itxtech_mirainative_Bridge_PRI_MSG_SUBTYPE_DISCUSS
-#define org_itxtech_mirainative_Bridge_PRI_MSG_SUBTYPE_DISCUSS 3L
-#undef org_itxtech_mirainative_Bridge_PERM_SUBTYPE_CANCEL_ADMIN
-#define org_itxtech_mirainative_Bridge_PERM_SUBTYPE_CANCEL_ADMIN 1L
-#undef org_itxtech_mirainative_Bridge_PERM_SUBTYPE_SET_ADMIN
-#define org_itxtech_mirainative_Bridge_PERM_SUBTYPE_SET_ADMIN 2L
-#undef org_itxtech_mirainative_Bridge_MEMBER_LEAVE_QUIT
-#define org_itxtech_mirainative_Bridge_MEMBER_LEAVE_QUIT 1L
-#undef org_itxtech_mirainative_Bridge_MEMBER_LEAVE_KICK
-#define org_itxtech_mirainative_Bridge_MEMBER_LEAVE_KICK 2L
-#undef org_itxtech_mirainative_Bridge_MEMBER_JOIN_PERMITTED
-#define org_itxtech_mirainative_Bridge_MEMBER_JOIN_PERMITTED 1L
-#undef org_itxtech_mirainative_Bridge_MEMBER_JOIN_INVITED_BY_ADMIN
-#define org_itxtech_mirainative_Bridge_MEMBER_JOIN_INVITED_BY_ADMIN 2L
-#undef org_itxtech_mirainative_Bridge_REQUEST_GROUP_APPLY
-#define org_itxtech_mirainative_Bridge_REQUEST_GROUP_APPLY 1L
-#undef org_itxtech_mirainative_Bridge_REQUEST_GROUP_INVITED
-#define org_itxtech_mirainative_Bridge_REQUEST_GROUP_INVITED 2L
-#undef org_itxtech_mirainative_Bridge_GROUP_UNMUTE
-#define org_itxtech_mirainative_Bridge_GROUP_UNMUTE 1L
-#undef org_itxtech_mirainative_Bridge_GROUP_MUTE
-#define org_itxtech_mirainative_Bridge_GROUP_MUTE 2L
-#undef org_itxtech_mirainative_Bridge_GROUP_RECALL_SELF
-#define org_itxtech_mirainative_Bridge_GROUP_RECALL_SELF 1L
-#undef org_itxtech_mirainative_Bridge_GROUP_RECALL_OTHER
-#define org_itxtech_mirainative_Bridge_GROUP_RECALL_OTHER 2L
-#undef org_itxtech_mirainative_Bridge_GROUP_BOT_NUDGE_SELF
-#define org_itxtech_mirainative_Bridge_GROUP_BOT_NUDGE_SELF 11L
-#undef org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_SELF
-#define org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_SELF 12L
-#undef org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_BOT
-#define org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_BOT 21L
-#undef org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_OTHER
-#define org_itxtech_mirainative_Bridge_GROUP_OTHER_NUDGE_OTHER 22L
-#undef org_itxtech_mirainative_Bridge_FRIEND_NUDGE_BOT
-#define org_itxtech_mirainative_Bridge_FRIEND_NUDGE_BOT 1L
-#undef org_itxtech_mirainative_Bridge_FRIEND_NUDGE_FRIEND
-#define org_itxtech_mirainative_Bridge_FRIEND_NUDGE_FRIEND 2L
 /*
  * Class:     org_itxtech_mirainative_Bridge
  * Method:    shutdown
@@ -202,6 +158,30 @@ JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupNudge
  */
 JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendNudge
   (JNIEnv *, jclass, jint, jbyteArray, jint, jlong, jlong, jbyteArray, jbyteArray);
+
+/*
+ * Class:     org_itxtech_mirainative_Bridge
+ * Method:    pEvFriendNickChanged
+ * Signature: (I[BIJ[B[B)I
+ */
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendNickChanged
+  (JNIEnv *, jobject, jint, jbyteArray, jint, jlong, jbyteArray, jbyteArray);
+
+/*
+ * Class:     org_itxtech_mirainative_Bridge
+ * Method:    pEvGroupNameChanged
+ * Signature: (I[BIJJ[B[B)I
+ */
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupNameChanged
+  (JNIEnv *, jobject, jint, jbyteArray, jint, jlong, jlong, jbyteArray, jbyteArray);
+
+/*
+ * Class:     org_itxtech_mirainative_Bridge
+ * Method:    pEvGroupMemberCardChanged
+ * Signature: (I[BIJJ[B[B)I
+ */
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupMemberCardChanged
+  (JNIEnv *, jobject, jint, jbyteArray, jint, jlong, jlong, jbyteArray, jbyteArray);
 
 #ifdef __cplusplus
 }
