@@ -1,5 +1,9 @@
 @echo off
 cd build\classes
-"D:\Program Files\Java\jdk1.8.0_351\bin\javah" -classpath ".\kotlin\main" org.itxtech.mirainative.Bridge
+javap -p -constants -cp ".\kotlin\main" org.itxtech.mirainative.Bridge > Bridge.java
+python ..\..\gen-file.py
+javac -h . Bridge.java
 copy /y org_itxtech_mirainative_Bridge.h ..\..\native
+del Bridge.java
+del Bridge.class
 cd ..\..
