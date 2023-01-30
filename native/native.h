@@ -30,6 +30,10 @@ typedef int32_t (__stdcall* EvFriendRecall)(int32_t, int32_t, int64_t, const cha
 typedef int32_t (__stdcall* EvGroupRecall)(int32_t, int32_t, int64_t, int64_t, int64_t, const char*);
 typedef int32_t (__stdcall* EvGroupNudge) (int32_t, int64_t, int64_t, int64_t, const char*, const char*);
 typedef int32_t (__stdcall* EvFriendNudge) (int32_t, int64_t, int64_t, const char*, const char*);
+typedef int32_t (__stdcall* EvFriendNickChanged) (int32_t, int64_t, const char*, const char*);
+typedef int32_t (__stdcall* EvGroupNameChanged) (int32_t, int64_t, int64_t, const char*, const char*);
+typedef int32_t (__stdcall* EvGroupMemberCardChanged) (int32_t, int64_t, int64_t, const char*, const char*);
+
 
 struct native_plugin
 {

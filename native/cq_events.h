@@ -147,3 +147,39 @@ JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendNudge(
 	}
 	return 0;
 }
+
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendNickChanged(
+	JNIEnv* env, jclass clz, jint id, jbyteArray method, jint type, jlong acct, jbyteArray fromNick, jbyteArray toNick
+)
+{
+	const auto m = EvFriendNickChanged(GetMethod(env, id, method));
+	if (m)
+	{
+		return m(type, acct, ByteArrayToString(env, fromNick).c_str(), ByteArrayToString(env, toNick).c_str());
+	}
+	return 0;
+}
+
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupNameChanged(
+	JNIEnv* env, jclass clz, jint id, jbyteArray method, jint type, jlong grp, jlong acct, jbyteArray fromName, jbyteArray toName
+)
+{
+	const auto m = EvGroupNameChanged(GetMethod(env, id, method));
+	if (m)
+	{
+		return m(type, grp, acct, ByteArrayToString(env, fromName).c_str(), ByteArrayToString(env, toName).c_str());
+	}
+	return 0;
+}
+
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupMemberCardChanged(
+	JNIEnv* env, jclass clz, jint id, jbyteArray method, jint type, jlong grp, jlong mbr, jbyteArray fromCard, jbyteArray toCard
+)
+{
+	const auto m = EvGroupMemberCardChanged(GetMethod(env, id, method));
+	if (m)
+	{
+		return m(type, grp, mbr, ByteArrayToString(env, fromCard).c_str(), ByteArrayToString(env, toCard).c_str());
+	}
+	return 0;
+}
