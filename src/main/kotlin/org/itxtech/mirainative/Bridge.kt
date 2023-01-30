@@ -342,6 +342,35 @@ object Bridge {
         suffix: ByteArray
     ) :Int
 
+    external fun pEvFriendNickChanged(
+        pluginId: Int,
+        method: ByteArray,
+        subType: Int,
+        fromAccount: Long,
+        fromNick: ByteArray,
+        toNick: ByteArray
+    ) :Int
+
+    external fun pEvGroupNameChanged(
+        pluginId: Int,
+        method: ByteArray,
+        subType: Int,
+        fromGroup: Long,
+        fromAccount: Long,
+        fromName: ByteArray,
+        toName: ByteArray
+    ) :Int
+
+    external fun pEvGroupMemberCardChanged(
+        pluginId: Int,
+        method: ByteArray,
+        subType: Int,
+        fromGroup: Long,
+        fromAccount: Long,
+        fromCard: ByteArray,
+        toCard: ByteArray
+    ) :Int
+
 }
 
 fun String.toNative() = toByteArray(Charset.forName("GB18030"))

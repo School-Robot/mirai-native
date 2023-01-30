@@ -147,6 +147,25 @@ object EventManager {
                 }
             }
 
+            // 改昵称
+            subscribeAlways<FriendNickChangedEvent> {
+                launchEvent {
+                    NativeBridge.eventFriendNickChanged(1,it.friend.id,it.from,it.to)
+                }
+            }
+
+            subscribeAlways<GroupNameChangeEvent> {
+                launchEvent {
+                    NativeBridge.eventGroupNameChanged(1,it.groupId,it.operatorOrBot.id,it.origin,it.new)
+                }
+            }
+
+            subscribeAlways<MemberCardChangeEvent> {
+                launchEvent {
+                    NativeBridge.eventGroupMemberCardChanged(1,it.groupId,it.member.id,it.origin,it.new)
+                }
+            }
+
             // 戳一戳事件
             subscribeAlways<NudgeEvent> {
                 launchEvent {
@@ -179,7 +198,7 @@ object EventManager {
                                 subject.id,
                                 from.id,
                                 if (from is AnonymousMember) (from as AnonymousMember).anonymousId else "",//可能不兼容某些插件
-                                "[CQ:nudge,from="+from.id.toString()+",target="+target.id.toString()+",subject="+subject.id+",action="+action+",suffix="+suffix+"]",
+                                "[CQ:nudge,qq="+target.id.toString()+"]",
                                 0
                             )
                         }
@@ -198,7 +217,7 @@ object EventManager {
                                 Bridge.PRI_MSG_SUBTYPE_ONLINE_STATE,
                                 0,
                                 subject.id,
-                                "[CQ:nudge,from="+from.id.toString()+",target="+target.id.toString()+",subject="+subject.id+",action="+action+",suffix="+suffix+"]",
+                                "[CQ:nudge,qq="+target.id.toString()+"]",
                                 0
                             )
                         }

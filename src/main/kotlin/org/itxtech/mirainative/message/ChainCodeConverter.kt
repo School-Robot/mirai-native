@@ -274,6 +274,7 @@ object ChainCodeConverter {
                             contact.get(args["qq"]!!.toLong())?.unmute()
                         }
                     }
+                    return MSG_EMPTY
                 }
 
                 else -> {

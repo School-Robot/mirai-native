@@ -240,14 +240,39 @@ object NativeBridge {
     }
 
     fun eventGroupNudge(subType: Int, fromGroup: Long, fromAccount: Long, benigOperateAccount: Long, action: String, suffix: String) {
-        event(Event.EVENT_GROUP_NUDGE, "_eventNudge_Group"){
+        event(Event.EVENT_GROUP_NUDGE, "_eventGroup_Nudge"){
             Bridge.pEvGroupNudge(id,it,subType,fromGroup,fromAccount,benigOperateAccount,action.toNative(),suffix.toNative())
         }
     }
 
     fun eventFriendNudge(subType: Int, fromAccount: Long, beingOperateAccount: Long, action: String, suffix: String) {
-        event(Event.EVENT_FRIEND_NUDGE,"_eventNudge_Friend"){
+        event(Event.EVENT_FRIEND_NUDGE,"_eventFriend_Nudge"){
             Bridge.pEvFriendNudge(id,it,subType,fromAccount,beingOperateAccount,action.toNative(),suffix.toNative())
+        }
+    }
+
+    fun eventFriendNickChanged(subType: Int, fromAccount: Long, fromNick: String, toNock: String) {
+        event(Event.EVENT_FRIEND_NICK_CHANGED,"_eventFriend_NickChanged"){
+            Bridge.pEvFriendNickChanged(id,it,subType,fromAccount,fromNick.toNative(),toNock.toNative())
+        }
+    }
+
+    fun eventGroupNameChanged(subType: Int, fromGroup: Long, fromAccount: Long, fromName: String, toName: String) {
+        event(Event.EVENT_GROUP_NAME_CHANGED,"_eventGroup_NameChanged"){
+            Bridge.pEvGroupNameChanged(id,it,subType,fromGroup,fromAccount,fromName.toNative(),toName.toNative())
+        }
+
+    }
+
+    fun eventGroupMemberCardChanged(
+        subType: Int,
+        fromGroup: Long,
+        fromAccount: Long,
+        fromCard: String,
+        toCard: String
+    ) {
+        event(Event.EVENT_GROUP_MEMBER_CARD_CHANGED,"_eventGroup_NameChanged"){
+            Bridge.pEvGroupMemberCardChanged(id,it,subType,fromGroup,fromAccount,fromCard.toNative(),toCard.toNative())
         }
     }
 }
