@@ -438,6 +438,10 @@ object MiraiBridge {
         return 0
     }
 
+    fun getMemberHeadImg(pluginId: Int,group: Long,account: Long)=call("CQ_getMemberHeadImg",pluginId,""){
+        return MiraiNative.bot.getGroup(group)?.getMember(account)?.avatarUrl?:""
+    }
+
     fun ByteReadPacket.readString(): String {
         return String(readBytes(readShort().toInt()))
     }

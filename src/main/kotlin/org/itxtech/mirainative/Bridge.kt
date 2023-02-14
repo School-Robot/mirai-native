@@ -274,6 +274,9 @@ object Bridge {
     fun sendGroupNudge(pluginId: Int, group: Long, target: Long) =
         MiraiBridge.sendGroupNudge(pluginId, group, target)
 
+    fun getMemberHeadImg(pluginId: Int, group: Long, account: Long) =
+        MiraiBridge.getMemberHeadImg(pluginId, group, account).toNative()
+
     // Placeholder methods which mirai hasn't supported yet
 
     @JvmStatic
