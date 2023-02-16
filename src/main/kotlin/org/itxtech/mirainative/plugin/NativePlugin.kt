@@ -111,4 +111,11 @@ data class NativePlugin(val file: File, val id: Int) {
         }
         return false
     }
+
+    fun hasPermission(auth: Int): Boolean {
+        if (pluginInfo == null) {
+            return false
+        }
+        return pluginInfo!!.auth.contains(auth)
+    }
 }

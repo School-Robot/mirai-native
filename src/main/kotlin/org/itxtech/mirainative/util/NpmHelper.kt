@@ -32,6 +32,35 @@ object NpmHelper {
 
     fun name(p: NativePlugin) = if (p.pluginInfo != null) p.pluginInfo!!.name else p.identifier
 
+    fun auth(i: Int) = when (i) {
+        20 -> "[敏感]取Cookies getCookies / getCsrfToken"
+        30 -> "接收语音 getRecord"
+        101 -> "发送群消息 sendGroupMsg"
+        103 -> "发送讨论组消息 sendDiscussMsg"
+        106 -> "发送私聊消息 sendPrivateMsg"
+        110 -> "[敏感]发送赞 sendLike"
+        120 -> "置群员移除 setGroupKick"
+        121 -> "置群员禁言 setGroupBan"
+        122 -> "置群管理员 setGroupAdmin"
+        123 -> "置全群禁言 setGroupWholeBan"
+        124 -> "置匿名群员禁言 setGroupAnonymousBan"
+        125 -> "置群匿名设置 setGroupAnonymous"
+        126 -> "置群成员名片 setGroupCard"
+        127 -> "[敏感]置群退出 setGroupLeave"
+        128 -> "置群成员专属头衔 setGroupSpecialTitle"
+        130 -> "取群成员信息 getGroupMemberInfo"
+        131 -> "取陌生人信息 getStrangerInfo"
+        132 -> "取群信息 getGroupInfo"
+        140 -> "置讨论组退出 setDiscussLeave"
+        150 -> "置好友添加请求 setFriendAddRequest"
+        151 -> "置群添加请求 setGroupAddRequest"
+        160 -> "取群成员列表 getGroupMemberList"
+        161 -> "取群列表 getGroupList"
+        162 -> "取好友列表 getFriendList"
+        180 -> "撤回消息 deleteMsg"
+        else -> "未知权限"
+    }
+
     fun summary(p: NativePlugin) = buildString {
         val i = p.pluginInfo
         appendLine("标识符：${p.identifier}")
@@ -57,6 +86,10 @@ object NpmHelper {
             appendLine("注册了 ${i.menu.size} 个菜单入口")
             i.menu.forEach { m ->
                 appendLine("名称：${m.name} 方法名：${m.function}")
+            }
+            appendLine("申请了 ${i.auth.size} 个权限")
+            i.auth.forEach { a ->
+                appendLine("ID：${a} 权限：${auth(a)}")
             }
         }
     }

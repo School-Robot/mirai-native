@@ -114,11 +114,16 @@ object MiraiBridge {
         pluginId: Int,
         defaultValue: T,
         errMsg: String = "",
+        auth: Int = 0,
         block: () -> T
     ): T {
         if (ConfigMan.config.verboseNativeApiLog) {
             val plugin = PluginManager.plugins[pluginId]
             MiraiNative.logger.verbose("插件 ${plugin?.detailedIdentifier ?: "$pluginId（未找到该插件）"} 调用了 $exportName 。")
+        }
+        if (auth > 0 && !PluginManager.plugins[pluginId]!!.hasPermission(auth)) {
+            logError(pluginId, "插件 %0 调用了 $exportName 但没有权限。")
+            return defaultValue
         }
         if (verifyCall(pluginId)) {
             try {
