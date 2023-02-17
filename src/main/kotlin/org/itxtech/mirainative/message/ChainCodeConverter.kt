@@ -258,7 +258,7 @@ object ChainCodeConverter {
                                 }
                                 if (args.containsKey("time")) {
                                     var time = args["time"]?.toInt()?:0
-                                    if(time<0) {
+                                    if(time<=0) {
                                         member.unmute()
                                         return MSG_EMPTY
                                     }
