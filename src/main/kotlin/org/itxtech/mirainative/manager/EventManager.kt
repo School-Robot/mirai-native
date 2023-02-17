@@ -110,7 +110,7 @@ object EventManager {
                         Bridge.PRI_MSG_SUBTYPE_ONLINE_STATE,
                         it.messageIds[0],
                         operatorId,
-                        "[CQ:recall,msg="+ChainCodeConverter.chainToCode(CacheManager.getMessage(it.messageIds[0])?.originalMessage?: buildMessageChain { +PlainText("") })+"]",
+                        "[CQ:recall]",
                         0
                     )
                     NativeBridge.eventFriendRecall(
@@ -130,7 +130,7 @@ object EventManager {
                         group.id,
                         operatorOrBot.id,
                         if (operatorOrBot is AnonymousMember) (operatorOrBot as AnonymousMember).anonymousId else "",//可能不兼容某些插件
-                        "[CQ:recall,operator="+operatorOrBot.id.toString()+",author="+authorId.toString()+",msg="+ChainCodeConverter.chainToCode(CacheManager.getMessage(it.messageIds[0])?.originalMessage?: buildMessageChain { +PlainText("") })+"]",
+                        "[CQ:recall,author=$authorId]",
                         0
                     )
                     NativeBridge.eventGroupRecall(
