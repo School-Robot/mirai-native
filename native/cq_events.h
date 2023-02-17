@@ -183,3 +183,15 @@ JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupMemberCardCha
 	}
 	return 0;
 }
+
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupMemberHonorChanged(
+	JNIEnv* env, jclass clz, jint id, jbyteArray method, jint type, jint time, jlong grp, jlong acct, jint honor
+)
+{
+	const auto m = EvGroupMemberHonorChanged(GetMethod(env, id, method));
+	if (m)
+	{
+		return m(type, time, grp, acct, honor);
+	}
+	return 0;
+}

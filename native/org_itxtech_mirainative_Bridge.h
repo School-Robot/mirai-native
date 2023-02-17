@@ -165,7 +165,7 @@ JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendNudge
  * Signature: (I[BIJ[B[B)I
  */
 JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendNickChanged
-  (JNIEnv *, jobject, jint, jbyteArray, jint, jlong, jbyteArray, jbyteArray);
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jlong, jbyteArray, jbyteArray);
 
 /*
  * Class:     org_itxtech_mirainative_Bridge
@@ -173,7 +173,7 @@ JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvFriendNickChanged
  * Signature: (I[BIJJ[B[B)I
  */
 JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupNameChanged
-  (JNIEnv *, jobject, jint, jbyteArray, jint, jlong, jlong, jbyteArray, jbyteArray);
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jlong, jlong, jbyteArray, jbyteArray);
 
 /*
  * Class:     org_itxtech_mirainative_Bridge
@@ -181,7 +181,15 @@ JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupNameChanged
  * Signature: (I[BIJJ[B[B)I
  */
 JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupMemberCardChanged
-  (JNIEnv *, jobject, jint, jbyteArray, jint, jlong, jlong, jbyteArray, jbyteArray);
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jlong, jlong, jbyteArray, jbyteArray);
+
+/*
+ * Class:     org_itxtech_mirainative_Bridge
+ * Method:    pEvGroupMemberHonorChanged
+ * Signature: (I[BIIJJI)I
+ */
+JNIEXPORT jint JNICALL Java_org_itxtech_mirainative_Bridge_pEvGroupMemberHonorChanged
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jint, jlong, jlong, jint);
 
 #ifdef __cplusplus
 }

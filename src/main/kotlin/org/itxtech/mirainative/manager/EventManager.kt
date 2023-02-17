@@ -385,6 +385,20 @@ object EventManager {
                     )
                 }
             }
+            subscribeAlways<MemberHonorChangeEvent> {
+                launchEvent {
+                    NativeBridge.eventGroupMemberHonorChange(
+                        when(it){
+                            is MemberHonorChangeEvent.Achieve->Bridge.GROUP_MEMBER_ARCHIVE
+                            is MemberHonorChangeEvent.Lose->Bridge.GROUP_MEMBER_LOSE
+                        },
+                        getTimestamp(),
+                        group.id,
+                        member.id,
+                        honorType.id
+                    )
+                }
+            }
         }
     }
 

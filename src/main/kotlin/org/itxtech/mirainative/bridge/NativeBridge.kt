@@ -228,13 +228,13 @@ object NativeBridge {
     }
 
     fun eventFriendRecall(subType: Int, time: Int, fromAccount: Long, msg: String) {
-        event(Event.EVENT_FRIEND_RECALL, "_eventRecall_Friend") {
+        event(Event.EVENT_FRIEND_RECALL, "_eventFriend_Recall") {
             Bridge.pEvFriendRecall(id, it, subType, time, fromAccount, msg.toNative())
         }
     }
 
     fun eventGroupRecall(subType: Int, time: Int, fromGroup: Long, fromAccount: Long, beingOperateAccount: Long, msg: String) {
-        event(Event.EVENT_GROUP_RECALL, "_eventRecall_Group") {
+        event(Event.EVENT_GROUP_RECALL, "_eventGroup_Recall") {
             Bridge.pEvGroupRecall(id, it, subType, time, fromGroup, fromAccount, beingOperateAccount, msg.toNative())
         }
     }
@@ -271,8 +271,14 @@ object NativeBridge {
         fromCard: String,
         toCard: String
     ) {
-        event(Event.EVENT_GROUP_MEMBER_CARD_CHANGED,"_eventGroup_NameChanged"){
+        event(Event.EVENT_GROUP_MEMBER_CARD_CHANGED,"_eventGroup_MemberCardChanged"){
             Bridge.pEvGroupMemberCardChanged(id,it,subType,fromGroup,fromAccount,fromCard.toNative(),toCard.toNative())
+        }
+    }
+
+    fun eventGroupMemberHonorChange(subType: Int, timestamp: Int, fromGroup: Long, fromAccount: Long, honorType: Int) {
+        event(Event.EVENT_GROUP_MEMBER_HONOR_CHANGED,"_eventGroup_MemberHonorChanged"){
+            Bridge.pEvGroupMemberHonorChanged(id,it,subType,timestamp,fromGroup,fromAccount,honorType)
         }
     }
 }

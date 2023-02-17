@@ -31,6 +31,9 @@ import org.itxtech.mirainative.bridge.MiraiImpl
 import java.nio.charset.Charset
 
 object Bridge {
+    const val GROUP_MEMBER_ARCHIVE = 1
+    const val GROUP_MEMBER_LOSE = 2
+
     const val PRI_MSG_SUBTYPE_FRIEND = 11
     const val PRI_MSG_SUBTYPE_ONLINE_STATE = 1
     const val PRI_MSG_SUBTYPE_GROUP = 2
@@ -348,6 +351,7 @@ object Bridge {
         suffix: ByteArray
     ) :Int
 
+    @JvmStatic
     external fun pEvFriendNickChanged(
         pluginId: Int,
         method: ByteArray,
@@ -357,6 +361,7 @@ object Bridge {
         toNick: ByteArray
     ) :Int
 
+    @JvmStatic
     external fun pEvGroupNameChanged(
         pluginId: Int,
         method: ByteArray,
@@ -367,6 +372,7 @@ object Bridge {
         toName: ByteArray
     ) :Int
 
+    @JvmStatic
     external fun pEvGroupMemberCardChanged(
         pluginId: Int,
         method: ByteArray,
@@ -376,6 +382,9 @@ object Bridge {
         fromCard: ByteArray,
         toCard: ByteArray
     ) :Int
+
+    @JvmStatic
+    external fun pEvGroupMemberHonorChanged(id: Int, method: ByteArray, subType: Int, timestamp: Int, fromGroup: Long, fromAccount: Long, honorType: Int) :Int
 
 }
 

@@ -51,6 +51,7 @@ data class Event(
     val regex: Regex? = null
 ) {
     companion object {
+        const val EVENT_GROUP_MEMBER_HONOR_CHANGED = 108
         const val EVENT_STARTUP = 1001
         const val EVENT_EXIT = 1002
         const val EVENT_ENABLE = 1003
