@@ -252,6 +252,10 @@ object ChainCodeConverter {
                         if (contact is Group) {
                             val member = contact.get(args["qq"]!!.toLong())
                             if (member != null) {
+                                if(member.permission.level>=contact.botPermission.level){
+                                    MiraiNative.logger.warning("权限不足，无法禁言该成员。")
+                                    return MSG_EMPTY
+                                }
                                 if (args.containsKey("time")) {
                                     var time = args["time"]?.toInt()?:0
                                     if(time<0) {
@@ -272,7 +276,14 @@ object ChainCodeConverter {
                 "unmute" -> {
                     if(args.containsKey("qq")){
                         if(contact is Group) {
-                            contact.get(args["qq"]!!.toLong())?.unmute()
+                            val member = contact.get(args["qq"]!!.toLong())
+                            if (member != null) {
+                                if(member.permission.level>=contact.botPermission.level){
+                                    MiraiNative.logger.warning("权限不足，无法解除禁言该成员。")
+                                    return MSG_EMPTY
+                                }
+                                member.unmute()
+                            }
                         }
                     }
                     return MSG_EMPTY
