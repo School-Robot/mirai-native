@@ -222,7 +222,7 @@ object NativeBridge {
     }
 
     fun eventFriendAdd(subType: Int, time: Int, fromAccount: Long) {
-        event(Event.EVENT_FRIEND_ADD, "_eventRequest_AddFriend") {
+        event(Event.EVENT_FRIEND_ADD, "_eventFriend_Add") {
             Bridge.pEvFriendAdd(id, it, subType, time, fromAccount)
         }
     }

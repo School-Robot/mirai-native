@@ -67,7 +67,7 @@ data class Event(
         const val EVENT_GROUP_MEMBER_INC = 103
         const val EVENT_GROUP_BAN = 104
 
-        const val EVENT_FRIEND_ADD = 105
+        const val EVENT_FRIEND_ADD = 201
 
         const val EVENT_REQUEST_FRIEND = 301
         const val EVENT_REQUEST_GROUP = 302
@@ -78,7 +78,7 @@ data class Event(
         const val EVENT_GROUP_NUDGE = 501
         const val EVENT_FRIEND_NUDGE = 502
 
-        const val EVENT_FRIEND_NICK_CHANGED = 205
+        const val EVENT_FRIEND_NICK_CHANGED = 202
         const val EVENT_GROUP_NAME_CHANGED = 106
         const val EVENT_GROUP_MEMBER_CARD_CHANGED = 107
     }
