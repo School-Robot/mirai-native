@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>&#x6613;&#x8bed;&#x8a00;SDK</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension ms-toolsai.jupyter */
+/* These classnames are inherited from bootstrap, but are present in most notebook renderers */
+
+.alert {
+    width: auto;
+    padding: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.alert > *:last-child {
+    margin-bottom: 0;
+}
+#preview > .alert:last-child {
+    /* Prevent this being set to zero by the default notebook stylesheet */
+    padding-bottom: 1em;
+}
+
+.alert-success {
+    /* Note there is no suitable color available, so we just copy "info" */
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-info {
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-warning {
+    background-color: var(--theme-warning-background);
+    color: var(--theme-warning-foreground);
+}
+.alert-danger {
+    background-color: var(--theme-error-background);
+    color: var(--theme-error-foreground);
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="易语言sdk">易语言SDK</h1>
+<p>修改自<code>CQP_EL_9.25</code></p>
+<h2 id="事件列表">事件列表</h2>
+<ul>
+<li><code>_eventDisable</code> 插件被禁用</li>
+<li><code>_eventDiscussMsg</code> 讨论组消息（不支持）</li>
+<li><code>_eventEnable</code> 插件被启用</li>
+<li><code>_eventExit</code> Mirai停止</li>
+<li><code>_eventFriend_Add</code> 好友已添加</li>
+<li><code>_eventFriend_NickChanged</code> 好友昵称改变</li>
+<li><code>_eventFriend_Nudge</code> 好友戳一戳</li>
+<li><code>_eventFriend_Recall</code> 好友撤回</li>
+<li><code>_eventGroup_MemberCardChanged</code> 群昵称改变</li>
+<li><code>_eventGroup_MemberHonorChanged</code> 群成员荣耀改变</li>
+<li><code>_eventGroup_NameChanged</code> 群名改变</li>
+<li><code>_eventGroup_Nudge</code> 群戳一戳</li>
+<li><code>_eventGroup_Recall</code> 群撤回</li>
+<li><code>_eventGroupMsg</code> 群消息</li>
+<li><code>_eventGroupUpload</code> 群文件上传（不支持）</li>
+<li><code>_eventPrivateMsg</code> 私聊消息</li>
+<li><code>_eventRequest_AddFriend</code> 好友添加请求</li>
+<li><code>_eventRequest_AddGroup</code> 群添加请求</li>
+<li><code>_eventStartup</code> Mirai启动</li>
+<li><code>_eventSystem_GroupAdmin</code> 管理员变动</li>
+<li><code>_eventSystem_GroupBan</code> 群禁言</li>
+<li><code>_eventSystem_GroupMemberDecrease</code> 群成员减少</li>
+<li><code>_eventSystem_GroupMemberIncrease</code> 群成员增加</li>
+</ul>
+<h2 id="事件类型">事件类型</h2>
+<pre><code class="language-kotlin"><span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_STARTUP = <span class="hljs-number">1001</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_EXIT = <span class="hljs-number">1002</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_ENABLE = <span class="hljs-number">1003</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_DISABLE = <span class="hljs-number">1004</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_PRI_MSG = <span class="hljs-number">21</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_MSG = <span class="hljs-number">2</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_DISCUSS_MSG = <span class="hljs-number">4</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_UPLOAD = <span class="hljs-number">11</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_ADMIN = <span class="hljs-number">101</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_MEMBER_DEC = <span class="hljs-number">102</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_MEMBER_INC = <span class="hljs-number">103</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_BAN = <span class="hljs-number">104</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_NAME_CHANGED = <span class="hljs-number">106</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_MEMBER_CARD_CHANGED = <span class="hljs-number">107</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_MEMBER_HONOR_CHANGED = <span class="hljs-number">108</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_FRIEND_ADD = <span class="hljs-number">201</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_REQUEST_FRIEND = <span class="hljs-number">301</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_REQUEST_GROUP = <span class="hljs-number">302</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_FRIEND_RECALL = <span class="hljs-number">402</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_RECALL = <span class="hljs-number">401</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_GROUP_NUDGE = <span class="hljs-number">501</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_FRIEND_NUDGE = <span class="hljs-number">502</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> EVENT_FRIEND_NICK_CHANGED = <span class="hljs-number">202</span>
+</code></pre>
+<pre><code class="language-kotlin"><span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_MEMBER_ARCHIVE = <span class="hljs-number">1</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_MEMBER_LOSE = <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> PRI_MSG_SUBTYPE_FRIEND = <span class="hljs-number">11</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> PRI_MSG_SUBTYPE_ONLINE_STATE = <span class="hljs-number">1</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> PRI_MSG_SUBTYPE_GROUP = <span class="hljs-number">2</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> PRI_MSG_SUBTYPE_DISCUSS = <span class="hljs-number">3</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> PERM_SUBTYPE_CANCEL_ADMIN = <span class="hljs-number">1</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> PERM_SUBTYPE_SET_ADMIN = <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> MEMBER_LEAVE_QUIT = <span class="hljs-number">1</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> MEMBER_LEAVE_KICK = <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> MEMBER_JOIN_PERMITTED = <span class="hljs-number">1</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> MEMBER_JOIN_INVITED_BY_ADMIN = <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> REQUEST_GROUP_APPLY = <span class="hljs-number">1</span> <span class="hljs-comment">//他人申请</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> REQUEST_GROUP_INVITED = <span class="hljs-number">2</span> <span class="hljs-comment">//受邀</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_UNMUTE = <span class="hljs-number">1</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_MUTE = <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_RECALL_SELF = <span class="hljs-number">1</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_RECALL_OTHER = <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_BOT_NUDGE_SELF = <span class="hljs-number">11</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_OTHER_NUDGE_SELF = <span class="hljs-number">12</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_OTHER_NUDGE_BOT = <span class="hljs-number">21</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> GROUP_OTHER_NUDGE_OTHER = <span class="hljs-number">22</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> FRIEND_NUDGE_BOT = <span class="hljs-number">1</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> FRIEND_NUDGE_FRIEND = <span class="hljs-number">2</span>
+</code></pre>
+<h2 id="api列表">API列表</h2>
+<p>参考CQPAppSdk</p>
+<h2 id="权限列表">权限列表</h2>
+<pre><code class="language-kotlin"><span class="hljs-number">20</span> -&gt; <span class="hljs-string">&quot;[敏感]取Cookies getCookies / getCsrfToken&quot;</span>
+<span class="hljs-number">30</span> -&gt; <span class="hljs-string">&quot;接收语音 getRecord&quot;</span>
+<span class="hljs-number">101</span> -&gt; <span class="hljs-string">&quot;发送群消息 sendGroupMsg&quot;</span>
+<span class="hljs-number">103</span> -&gt; <span class="hljs-string">&quot;发送讨论组消息 sendDiscussMsg&quot;</span>
+<span class="hljs-number">106</span> -&gt; <span class="hljs-string">&quot;发送私聊消息 sendPrivateMsg&quot;</span>
+<span class="hljs-number">110</span> -&gt; <span class="hljs-string">&quot;[敏感]发送赞 sendLike&quot;</span>
+<span class="hljs-number">120</span> -&gt; <span class="hljs-string">&quot;置群员移除 setGroupKick&quot;</span>
+<span class="hljs-number">121</span> -&gt; <span class="hljs-string">&quot;置群员禁言 setGroupBan&quot;</span>
+<span class="hljs-number">122</span> -&gt; <span class="hljs-string">&quot;置群管理员 setGroupAdmin&quot;</span>
+<span class="hljs-number">123</span> -&gt; <span class="hljs-string">&quot;置全群禁言 setGroupWholeBan&quot;</span>
+<span class="hljs-number">124</span> -&gt; <span class="hljs-string">&quot;置匿名群员禁言 setGroupAnonymousBan&quot;</span>
+<span class="hljs-number">125</span> -&gt; <span class="hljs-string">&quot;置群匿名设置 setGroupAnonymous&quot;</span>
+<span class="hljs-number">126</span> -&gt; <span class="hljs-string">&quot;置群成员名片 setGroupCard&quot;</span>
+<span class="hljs-number">127</span> -&gt; <span class="hljs-string">&quot;[敏感]置群退出 setGroupLeave&quot;</span>
+<span class="hljs-number">128</span> -&gt; <span class="hljs-string">&quot;置群成员专属头衔 setGroupSpecialTitle&quot;</span>
+<span class="hljs-number">130</span> -&gt; <span class="hljs-string">&quot;取群成员信息 getGroupMemberInfo&quot;</span>
+<span class="hljs-number">131</span> -&gt; <span class="hljs-string">&quot;取陌生人信息 getStrangerInfo&quot;</span>
+<span class="hljs-number">132</span> -&gt; <span class="hljs-string">&quot;取群信息 getGroupInfo&quot;</span>
+<span class="hljs-number">140</span> -&gt; <span class="hljs-string">&quot;置讨论组退出 setDiscussLeave&quot;</span>
+<span class="hljs-number">150</span> -&gt; <span class="hljs-string">&quot;置好友添加请求 setFriendAddRequest&quot;</span>
+<span class="hljs-number">151</span> -&gt; <span class="hljs-string">&quot;置群添加请求 setGroupAddRequest&quot;</span>
+<span class="hljs-number">160</span> -&gt; <span class="hljs-string">&quot;取群成员列表 getGroupMemberList&quot;</span>
+<span class="hljs-number">161</span> -&gt; <span class="hljs-string">&quot;取群列表 getGroupList&quot;</span>
+<span class="hljs-number">162</span> -&gt; <span class="hljs-string">&quot;取好友列表 getFriendList&quot;</span>
+<span class="hljs-number">180</span> -&gt; <span class="hljs-string">&quot;撤回消息 deleteMsg&quot;</span>
+</code></pre>
+<h2 id="json格式参考">JSON格式参考</h2>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;ret&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_ret&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;返回码，固定为1&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;apiver&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">10</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_apiver&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;Api版本，本SDK为10&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;酷Q样例应用&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_name&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;应用名称&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;1.0.0&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_version&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;应用版本&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;version_id&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_version_id&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;应用顺序版本（每次发布时至少+1）&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;author&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;Example&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_author&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;应用作者&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;description&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;酷Q样例应用(V9应用机制)&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_description&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;插件说明&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_event&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;事件列表，同一事件类型可重复定义（发布前请删除无用事件）&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;event&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+            <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_id&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;事件ID&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">21</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_type&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;事件类型&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;私聊消息处理&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_name&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;事件名称&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;function&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;_eventPrivateMsg&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_function&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;事件对应函数&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;priority&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">30000</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_priority&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;事件优先级(参见 https://cqp.im/deveventpriority )（暂不支持）&quot;</span>
+        <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_menu&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;设置菜单（发布前请删除无用菜单，如果无需设置菜单请全部删除）&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;menu&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+            <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;设置A&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_name&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;菜单名称&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;function&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;_menuA&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_function&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;菜单对应函数&quot;</span>
+        <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_status&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;悬浮窗状态（将应用运行状态等显示在酷Q悬浮窗）&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+            <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_id&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;悬浮窗ID&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;运行时间&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_name&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;名称&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;UPTIME&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_title&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;英文名称&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;function&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;_statusUptime&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_function&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;数据更新对应函数&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;period&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;1000&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;_period&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;更新间隔（单位ms（毫秒））&quot;</span>
+        <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;_auth&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;应用权限（发布前请删除无用权限）&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;auth&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>
+        <span class="hljs-number">101</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-number">103</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-number">106</span>
+    <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+
+        
+        
+    </body>
+    </html>
