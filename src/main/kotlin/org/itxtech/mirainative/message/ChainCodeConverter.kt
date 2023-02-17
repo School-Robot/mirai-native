@@ -255,7 +255,8 @@ object ChainCodeConverter {
                                 if (args.containsKey("time")) {
                                     var time = args["time"]?.toInt()?:0
                                     if(time<0) {
-                                        time=0
+                                        member.unmute()
+                                        return MSG_EMPTY
                                     }
                                     if(time>2592000) {
                                         time=2592000

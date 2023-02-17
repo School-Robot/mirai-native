@@ -364,6 +364,17 @@ CQAPI(const char*, CQ_getMemberHeadImg, 20)(int32_t plugin_id, int64_t grp, int6
 	return delay_mem_free(r);
 }
 
+CQAPI(const char*, CQ_getFriendHeadImg, 12)(int32_t plugin_id, int64_t acct)
+{
+	auto env = attach_java();
+	auto method = env->GetStaticMethodID(bclz, "getFriendrHeadImg", "(IJ)[B");
+	auto result = jbyteArray(env->CallStaticObjectMethod(bclz, method, plugin_id, acct));
+	auto r = ByteArrayToChars(env, result);
+	env->DeleteLocalRef(result);
+	detach_java();
+	return delay_mem_free(r);
+}
+
 // Legacy
 
 CQAPI(const char*, CQ_getCookies, 4)(int32_t plugin_id)

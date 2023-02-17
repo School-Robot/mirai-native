@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.contact.AvatarSpec
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
@@ -444,7 +445,65 @@ object MiraiBridge {
     }
 
     fun getMemberHeadImg(pluginId: Int,group: Long,account: Long)=call("CQ_getMemberHeadImg",pluginId,""){
-        return MiraiNative.bot.getGroup(group)?.getMember(account)?.avatarUrl?:""
+        return@call runBlocking {
+            val u = MiraiNative.bot.getGroup(group)?.getMember(account)?.avatarUrl?:""
+            if (u != "") {
+                client.prepareGet(u).execute { response ->
+                    if (response.status.isSuccess()) {
+                        val md = MessageDigest.getInstance("MD5")
+                        val basename = MiraiNative.imageDataPath.absolutePath + File.separatorChar +
+                                account.toString()
+                        val ext = when (response.headers[HttpHeaders.ContentType]) {
+                            "image/gif" -> "gif"
+                            "image/png" -> "png"
+                            "image/jpeg" -> "jpg"
+                            "image/x-bitmap" -> "bmp"
+                            "image/tiff" -> "tiff"
+                            else -> "jpg"
+                        }
+
+                        val file = File("$basename.$ext")
+                        response.bodyAsChannel().copyAndClose(file.writeChannel())
+                        file.absolutePath
+                    } else {
+                        ""
+                    }
+                }
+            }else {
+                ""
+            }
+        }
+    }
+
+    fun getFriendHeadImg(pluginId: Int,account: Long)=call("CQ_getFriendHeadImg",pluginId,""){
+        return@call runBlocking {
+            val u = MiraiNative.bot.getFriend(account)?.avatarUrl?:""
+            if (u != "") {
+                client.prepareGet(u).execute { response ->
+                    if (response.status.isSuccess()) {
+                        val md = MessageDigest.getInstance("MD5")
+                        val basename = MiraiNative.imageDataPath.absolutePath + File.separatorChar +
+                                account.toString()
+                        val ext = when (response.headers[HttpHeaders.ContentType]) {
+                            "image/gif" -> "gif"
+                            "image/png" -> "png"
+                            "image/jpeg" -> "jpg"
+                            "image/x-bitmap" -> "bmp"
+                            "image/tiff" -> "tiff"
+                            else -> "jpg"
+                        }
+
+                        val file = File("$basename.$ext")
+                        response.bodyAsChannel().copyAndClose(file.writeChannel())
+                        file.absolutePath
+                    } else {
+                        ""
+                    }
+                }
+            }else {
+                ""
+            }
+        }
     }
 
     fun ByteReadPacket.readString(): String {

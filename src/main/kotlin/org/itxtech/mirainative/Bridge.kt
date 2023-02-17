@@ -277,6 +277,9 @@ object Bridge {
     fun getMemberHeadImg(pluginId: Int, group: Long, account: Long) =
         MiraiBridge.getMemberHeadImg(pluginId, group, account).toNative()
 
+    fun getFriendHeadImg(pluginId: Int, account: Long) =
+        MiraiBridge.getFriendHeadImg(pluginId, account).toNative()
+
     // Placeholder methods which mirai hasn't supported yet
 
     @JvmStatic
