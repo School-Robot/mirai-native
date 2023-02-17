@@ -1,0 +1,1 @@
+python calc-sha1.py
