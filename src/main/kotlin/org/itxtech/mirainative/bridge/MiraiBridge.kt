@@ -136,7 +136,7 @@ object MiraiBridge {
         return defaultValue
     }
 
-    fun sendPrivateMessage(pluginId: Int, id: Long, message: String) = call("CQ_sendPrivateMsg", pluginId, 0) {
+    fun sendPrivateMessage(pluginId: Int, id: Long, message: String) = call("CQ_sendPrivateMsg", pluginId, 0,auth=106) {
         val internalId = CacheManager.nextId()
         MiraiNative.launch {
             CacheManager.findUser(id)?.apply {
@@ -153,7 +153,7 @@ object MiraiBridge {
         return internalId
     }
 
-    fun sendGroupMessage(pluginId: Int, id: Long, message: String) = call("CQ_sendGroupMsg", pluginId, 0) {
+    fun sendGroupMessage(pluginId: Int, id: Long, message: String) = call("CQ_sendGroupMsg", pluginId, 0, auth = 101) {
         val internalId = CacheManager.nextId()
         MiraiNative.launch {
             val contact = MiraiNative.bot.getGroup(id)
@@ -169,7 +169,7 @@ object MiraiBridge {
         return internalId
     }
 
-    fun setGroupBan(pluginId: Int, groupId: Long, memberId: Long, duration: Int) = call("CQ_setGroupBan", pluginId, 0) {
+    fun setGroupBan(pluginId: Int, groupId: Long, memberId: Long, duration: Int) = call("CQ_setGroupBan", pluginId, 0, auth = 121) {
         MiraiNative.launch {
             if (duration == 0) {
                 MiraiNative.bot.getGroup(groupId)?.get(memberId)?.unmute()
@@ -181,12 +181,12 @@ object MiraiBridge {
     }
 
     fun setGroupCard(pluginId: Int, groupId: Long, memberId: Long, card: String) =
-        call("CQ_setGroupCard", pluginId, 0) {
+        call("CQ_setGroupCard", pluginId, 0, auth = 126) {
             MiraiNative.bot.getGroup(groupId)?.get(memberId)?.nameCard = card
             return 0
         }
 
-    fun setGroupLeave(pluginId: Int, groupId: Long) = call("CQ_setGroupLeave", pluginId, 0) {
+    fun setGroupLeave(pluginId: Int, groupId: Long) = call("CQ_setGroupLeave", pluginId, 0, auth = 127) {
         MiraiNative.launch {
             MiraiNative.bot.getGroup(groupId)?.quit()
         }
@@ -194,17 +194,17 @@ object MiraiBridge {
     }
 
     fun setGroupSpecialTitle(pluginId: Int, group: Long, member: Long, title: String) =
-        call("CQ_setGroupSpecialTitleV2", pluginId, 0) {
+        call("CQ_setGroupSpecialTitleV2", pluginId, 0, auth = 128) {
             MiraiNative.bot.getGroup(group)?.get(member)?.specialTitle = title
             return 0
         }
 
-    fun setGroupWholeBan(pluginId: Int, group: Long, enable: Boolean) = call("CQ_setGroupWholeBan", pluginId, 0) {
+    fun setGroupWholeBan(pluginId: Int, group: Long, enable: Boolean) = call("CQ_setGroupWholeBan", pluginId, 0, auth = 123) {
         MiraiNative.bot.getGroup(group)?.settings?.isMuteAll = enable
         return 0
     }
 
-    fun getStrangerInfo(pluginId: Int, account: Long) = call("CQ_getStrangerInfo", pluginId, "") {
+    fun getStrangerInfo(pluginId: Int, account: Long) = call("CQ_getStrangerInfo", pluginId, "", auth = 131) {
         return@call runBlocking {
             val profile = Mirai.queryProfile(MiraiNative.bot, account)
             return@runBlocking buildPacket {
@@ -219,7 +219,7 @@ object MiraiBridge {
         }
     }
 
-    fun getFriendList(pluginId: Int) = call("CQ_getFriendList", pluginId, "") {
+    fun getFriendList(pluginId: Int) = call("CQ_getFriendList", pluginId, "", auth = 162) {
         val list = MiraiNative.bot.friends
         return buildPacket {
             writeInt(list.size)
@@ -233,7 +233,7 @@ object MiraiBridge {
         }.encodeBase64()
     }
 
-    fun getGroupInfo(pluginId: Int, id: Long) = call("CQ_getGroupInfo", pluginId, "") {
+    fun getGroupInfo(pluginId: Int, id: Long) = call("CQ_getGroupInfo", pluginId, "", auth = 132) {
         val info = MiraiNative.bot.getGroup(id)
         return if (info != null) {
             buildPacket {
@@ -246,7 +246,7 @@ object MiraiBridge {
         } else ""
     }
 
-    fun getGroupList(pluginId: Int) = call("CQ_getGroupList", pluginId, "") {
+    fun getGroupList(pluginId: Int) = call("CQ_getGroupList", pluginId, "", auth = 161) {
         val list = MiraiNative.bot.groups
         return buildPacket {
             writeInt(list.size)
@@ -260,7 +260,7 @@ object MiraiBridge {
     }
 
     fun getGroupMemberInfo(pluginId: Int, groupId: Long, memberId: Long) =
-        call("CQ_getGroupMemberInfoV2", pluginId, "") {
+        call("CQ_getGroupMemberInfoV2", pluginId, "", auth = 130) {
             val member = MiraiNative.bot.getGroup(groupId)?.get(memberId) ?: return ""
             return@call runBlocking {
                 return@runBlocking buildPacket {
@@ -269,7 +269,7 @@ object MiraiBridge {
             }
         }
 
-    fun getGroupMemberList(pluginId: Int, groupId: Long) = call("CQ_getGroupMemberList", pluginId, "") {
+    fun getGroupMemberList(pluginId: Int, groupId: Long) = call("CQ_getGroupMemberList", pluginId, "", auth = 160) {
         val group = MiraiNative.bot.getGroup(groupId) ?: return ""
         return@call runBlocking {
             return@runBlocking buildPacket {
@@ -284,7 +284,7 @@ object MiraiBridge {
     }
 
     fun setGroupAddRequest(pluginId: Int, requestId: String, reqType: Int, type: Int, reason: String, blacklist: Boolean) =
-        call("CQ_setGroupAddRequestV3", pluginId, 0) {
+        call("CQ_setGroupAddRequestV3", pluginId, 0, auth = 151) {
             MiraiNative.launch {
                 if (reqType == Bridge.REQUEST_GROUP_APPLY) {
                     (CacheManager.getEvent(requestId) as? MemberJoinRequestEvent)?.apply {
@@ -307,7 +307,7 @@ object MiraiBridge {
         }
 
     fun setFriendAddRequest(pluginId: Int, requestId: String, type: Int, blacklist: Boolean) =
-        call("CQ_setFriendAddRequestV2", pluginId, 0) {
+        call("CQ_setFriendAddRequestV2", pluginId, 0, auth = 150) {
             MiraiNative.launch {
                 (CacheManager.getEvent(requestId) as? NewFriendRequestEvent)?.apply {
                     when (type) {//1通过，2拒绝
@@ -354,7 +354,7 @@ object MiraiBridge {
         }
 
     fun getRecord(pluginId: Int, record: String) =
-        call("CQ_getRecordV3", pluginId, "", "Error occurred when plugin %0 downloading record $record") {
+        call("CQ_getRecordV3", pluginId, "", "Error occurred when plugin %0 downloading record $record",30) {
             return runBlocking {
                 val rec = CacheManager.getRecord(record.replace(".mnrec", ""))
                 if (rec != null) {
@@ -378,7 +378,7 @@ object MiraiBridge {
         }
 
     fun setGroupAnonymousBan(pluginId: Int, group: Long, id: String, duration: Long) =
-        call("CQ_setGroupAnonymousBan", pluginId, 0) {
+        call("CQ_setGroupAnonymousBan", pluginId, 0, auth = 124) {
             runBlocking {
                 CacheManager.findAnonymousMember(group, id)?.mute(duration.toInt())
             }
@@ -386,7 +386,7 @@ object MiraiBridge {
         }
 
     fun setGroupAdmin(pluginId: Int, group: Long, account: Long, admin: Boolean) =
-        call("CQ_setGroupAdmin", pluginId, 0) {
+        call("CQ_setGroupAdmin", pluginId, 0, auth = 122) {
             runBlocking {
                 MiraiNative.bot.getGroup(group)?.getMember(account)?.modifyAdmin(admin)
             }
@@ -409,7 +409,7 @@ object MiraiBridge {
         return MiraiNative.bot.nick
     }
 
-    fun recallMessage(pluginId: Int, id: Long) = call("CQ_deleteMsg", pluginId, -1) {
+    fun recallMessage(pluginId: Int, id: Long) = call("CQ_deleteMsg", pluginId, -1, auth = 180) {
         return if (CacheManager.recall(id.toInt())) 0 else -1
     }
 
@@ -450,7 +450,6 @@ object MiraiBridge {
             if (u != "") {
                 client.prepareGet(u).execute { response ->
                     if (response.status.isSuccess()) {
-                        val md = MessageDigest.getInstance("MD5")
                         val basename = MiraiNative.imageDataPath.absolutePath + File.separatorChar +
                                 account.toString()
                         val ext = when (response.headers[HttpHeaders.ContentType]) {
@@ -481,7 +480,6 @@ object MiraiBridge {
             if (u != "") {
                 client.prepareGet(u).execute { response ->
                     if (response.status.isSuccess()) {
-                        val md = MessageDigest.getInstance("MD5")
                         val basename = MiraiNative.imageDataPath.absolutePath + File.separatorChar +
                                 account.toString()
                         val ext = when (response.headers[HttpHeaders.ContentType]) {

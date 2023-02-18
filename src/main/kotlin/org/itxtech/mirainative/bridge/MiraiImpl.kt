@@ -78,7 +78,7 @@ object MiraiImpl {
         }
 
     fun setGroupKick(pluginId: Int, groupId: Long, memberId: Long, message: String) =
-        call(if (message.isBlank()) "CQ_setGroupKick" else "mSetGroupKick", pluginId, 0) {
+        call(if (message.isBlank()) "CQ_setGroupKick" else "mSetGroupKick", pluginId, 0, auth = 120) {
             MiraiNative.launch {
                 MiraiNative.bot.getGroup(groupId)?.get(memberId)?.kick(message)
             }
