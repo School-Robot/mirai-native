@@ -84,8 +84,17 @@ object PluginManager {
     }
 
     fun readPluginFromFile(f: String): Boolean {
-        val file = File(pl.absolutePath + File.separatorChar + f)
-        if (f.endsWith(".dll") && file.isFile && file.exists()) {
+        var file = File(pl.absolutePath + File.separatorChar + f)
+        if (!file.exists()){
+            file = File(pl.absolutePath + File.separatorChar + f+".dll")
+            if (!file.exists()){
+                file = File(pl.absolutePath + File.separatorChar + f+".dev.dll")
+                if (!file.exists()) {
+                    return false
+                }
+            }
+        }
+        if (file.isFile && file.exists()) {
             readPlugin(file)
             return true
         }

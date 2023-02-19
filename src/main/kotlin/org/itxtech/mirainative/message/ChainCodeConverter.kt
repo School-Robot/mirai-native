@@ -36,6 +36,7 @@ import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.PokeMessage.Key.ChuoYiChuo
 import net.mamoe.mirai.utils.ExternalResource
@@ -229,6 +230,13 @@ object ChainCodeConverter {
                     return MSG_EMPTY
                 }
 
+                "reply" -> {
+                    if (args.containsKey("id")) {
+                        return CacheManager.getMessage(args["id"]!!.toInt())!!.quote()
+                    }
+                    return MSG_EMPTY
+                }
+
                 "nudge" -> {
                     if (args.containsKey("qq")) {
                         if (contact is Group) {
@@ -326,6 +334,7 @@ object ChainCodeConverter {
                 is FlashImage -> "[CQ:image,file=${it.image.imageId}.mnimg,type=flash]"
                 is MarketFace -> "[CQ:bface,id=${it.id},name=${it.name}]"
                 is Dice -> "[CQ:dice,type=${it.value}]"
+                is QuoteReply -> "[CQ:reply,id=${it.source.ids[0]},from=${it.source.fromId}]"
                 else -> ""//error("不支持的消息类型：${it::class.simpleName}")
             }
         }

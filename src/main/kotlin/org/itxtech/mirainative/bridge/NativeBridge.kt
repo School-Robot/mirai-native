@@ -46,7 +46,7 @@ object NativeBridge {
             file.absolutePath.replace("\\", "\\\\").toNative(),
             plugin.id
         )
-        val info = "插件 ${plugin.file.name} 已被加载，返回值为 $code 。"
+        val info = "插件 ${plugin.file.name} 已被加载，ID：${plugin.id}，返回值为 $code 。"
         if (code == 0) {
             getLogger().info(info)
         } else {
