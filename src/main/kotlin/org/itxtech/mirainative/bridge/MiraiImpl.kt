@@ -50,7 +50,7 @@ object MiraiImpl {
                         val f = MiraiNative.bot.getFriend(src.fromId)
                         val chain = src.quote() + ChainCodeConverter.codeToChain(message, f)
                         f?.sendMessage(chain)?.apply {
-                            CacheManager.cacheMessage(source, chain)
+                            CacheManager.cacheMessage(source, internalId, chain)
                         }
                     }
                 } else {
@@ -58,7 +58,7 @@ object MiraiImpl {
                     if (src.fromId != MiraiNative.bot.id) {
                         val chain = src.quote() + ChainCodeConverter.codeToChain(message, group)
                         group?.sendMessage(chain)?.apply {
-                            CacheManager.cacheMessage(source, chain)
+                            CacheManager.cacheMessage(source, internalId, chain)
                         }
                     }
                 }

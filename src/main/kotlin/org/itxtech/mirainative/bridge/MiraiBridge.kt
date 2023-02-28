@@ -36,23 +36,27 @@ import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.Bot
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+//import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.AvatarSpec
+//import net.mamoe.mirai.contact.AvatarSpec
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.getMember
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.data.RequestEventData
+//import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
+//import net.mamoe.mirai.event.events.MemberJoinRequestEvent
+//import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.MemberNudge
-import net.mamoe.mirai.message.action.UserNudge
-import net.mamoe.mirai.message.data.AudioCodec
+//import net.mamoe.mirai.message.action.UserNudge
+//import net.mamoe.mirai.message.data.AudioCodec
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.isContentEmpty
 import org.itxtech.mirainative.Bridge
 import org.itxtech.mirainative.MiraiNative
+import org.itxtech.mirainative.MiraiNative.json
 import org.itxtech.mirainative.fromNative
 import org.itxtech.mirainative.manager.CacheManager
 import org.itxtech.mirainative.manager.PluginManager
@@ -69,6 +73,26 @@ import kotlin.io.use
 import kotlin.text.toByteArray
 
 object MiraiBridge {
+    @Serializable
+    data class ImageInfo(
+        val id: String,
+        val type: String,
+        val height: Int,
+        val width: Int,
+        val size: Long,
+        val url: String
+    )
+
+    @Serializable
+    data class RecordInfo(
+        val filename: String,
+        val md5: ByteArray,
+        val codec: String,
+        val size: Long,
+        val extra: ByteArray?,
+        val url: String
+    )
+
     val client = HttpClient(OkHttp) {
         install(UserAgent) {
             agent =
@@ -136,49 +160,51 @@ object MiraiBridge {
         return defaultValue
     }
 
-    fun sendPrivateMessage(pluginId: Int, id: Long, message: String) = call("CQ_sendPrivateMsg", pluginId, 0,auth=106) {
-        val internalId = CacheManager.nextId()
-        MiraiNative.launch {
-            CacheManager.findUser(id)?.apply {
-                val chain = ChainCodeConverter.codeToChain(message, this)
-                if(chain.isContentEmpty()){
-                    MiraiNative.logger.warning("message is empty")
-                }else {
-                    sendMessage(chain).apply {
-                        CacheManager.cacheMessage(source, chain)
+    fun sendPrivateMessage(pluginId: Int, id: Long, message: String) =
+        call("CQ_sendPrivateMsg", pluginId, 0, auth = 106) {
+            val internalId = CacheManager.nextId()
+            MiraiNative.launch {
+                CacheManager.findUser(id)?.apply {
+                    val chain = ChainCodeConverter.codeToChain(message, this)
+                    if (chain.isContentEmpty()) {
+                        MiraiNative.logger.warning("message is empty")
+                    } else {
+                        sendMessage(chain).apply {
+                            CacheManager.cacheMessage(source, internalId, chain)
+                        }
                     }
                 }
             }
+            return internalId
         }
-        return internalId
-    }
 
     fun sendGroupMessage(pluginId: Int, id: Long, message: String) = call("CQ_sendGroupMsg", pluginId, 0, auth = 101) {
         val internalId = CacheManager.nextId()
         MiraiNative.launch {
             val contact = MiraiNative.bot.getGroup(id)
             val chain = ChainCodeConverter.codeToChain(message, contact)
-            if(chain.isContentEmpty()){
+            if (chain.isContentEmpty()) {
                 MiraiNative.logger.warning("message is empty")
-            }else {
+            } else {
                 contact?.sendMessage(chain)?.apply {
-                    CacheManager.cacheMessage(source, chain)
+                    CacheManager.cacheMessage(source, internalId, chain)
                 }
             }
         }
         return internalId
     }
 
-    fun setGroupBan(pluginId: Int, groupId: Long, memberId: Long, duration: Int) = call("CQ_setGroupBan", pluginId, 0, auth = 121) {
-        MiraiNative.launch {
-            if (duration == 0) {
-                MiraiNative.bot.getGroup(groupId)?.get(memberId)?.unmute()
-            } else {
-                MiraiNative.bot.getGroup(groupId)?.get(memberId)?.mute(duration)
+    fun setGroupBan(pluginId: Int, groupId: Long, memberId: Long, duration: Int) =
+        call("CQ_setGroupBan", pluginId, 0, auth = 121) {
+            MiraiNative.launch {
+                if (duration == 0) {
+                    MiraiNative.bot.getGroup(groupId)?.get(memberId)?.unmute()
+                } else {
+                    MiraiNative.bot.getGroup(groupId)?.get(memberId)?.mute(duration)
+                }
             }
+            return 0
         }
-        return 0
-    }
 
     fun setGroupCard(pluginId: Int, groupId: Long, memberId: Long, card: String) =
         call("CQ_setGroupCard", pluginId, 0, auth = 126) {
@@ -199,10 +225,11 @@ object MiraiBridge {
             return 0
         }
 
-    fun setGroupWholeBan(pluginId: Int, group: Long, enable: Boolean) = call("CQ_setGroupWholeBan", pluginId, 0, auth = 123) {
-        MiraiNative.bot.getGroup(group)?.settings?.isMuteAll = enable
-        return 0
-    }
+    fun setGroupWholeBan(pluginId: Int, group: Long, enable: Boolean) =
+        call("CQ_setGroupWholeBan", pluginId, 0, auth = 123) {
+            MiraiNative.bot.getGroup(group)?.settings?.isMuteAll = enable
+            return 0
+        }
 
     fun getStrangerInfo(pluginId: Int, account: Long) = call("CQ_getStrangerInfo", pluginId, "", auth = 131) {
         return@call runBlocking {
@@ -283,22 +310,29 @@ object MiraiBridge {
         }
     }
 
-    fun setGroupAddRequest(pluginId: Int, requestId: String, reqType: Int, type: Int, reason: String, blacklist: Boolean) =
+    fun setGroupAddRequest(
+        pluginId: Int,
+        requestId: String,
+        reqType: Int,
+        type: Int,
+        reason: String,
+        blacklist: Boolean
+    ) =
         call("CQ_setGroupAddRequestV3", pluginId, 0, auth = 151) {
             MiraiNative.launch {
                 if (reqType == Bridge.REQUEST_GROUP_APPLY) {
-                    (CacheManager.getEvent(requestId) as? MemberJoinRequestEvent)?.apply {
+                    (CacheManager.getEvent(requestId) as? RequestEventData.MemberJoinRequest)?.apply {
                         when (type) {//1通过，2拒绝，3忽略
-                            1 -> accept()
-                            2 -> reject(message = reason, blackList = blacklist)
-                            3 -> ignore()
+                            1 -> accept(MiraiNative.bot)
+                            2 -> reject(MiraiNative.bot, message = reason, blackList = blacklist)
+                            //3 -> ignore()
                         }
                     }
                 } else {
-                    (CacheManager.getEvent(requestId) as? BotInvitedJoinGroupRequestEvent)?.apply {
+                    (CacheManager.getEvent(requestId) as? RequestEventData.BotInvitedJoinGroupRequest)?.apply {
                         when (type) {//1通过，2忽略
-                            1 -> accept()
-                            2 -> ignore()
+                            1 -> accept(MiraiNative.bot)
+                            //2 -> ignore()
                         }
                     }
                 }
@@ -309,10 +343,10 @@ object MiraiBridge {
     fun setFriendAddRequest(pluginId: Int, requestId: String, type: Int, blacklist: Boolean) =
         call("CQ_setFriendAddRequestV2", pluginId, 0, auth = 150) {
             MiraiNative.launch {
-                (CacheManager.getEvent(requestId) as? NewFriendRequestEvent)?.apply {
+                (CacheManager.getEvent(requestId) as? RequestEventData.NewFriendRequest)?.apply {
                     when (type) {//1通过，2拒绝
-                        1 -> accept()
-                        2 -> reject(blacklist)
+                        1 -> accept(MiraiNative.bot)
+                        2 -> reject(MiraiNative.bot, blacklist)
                     }
                 }
             }
@@ -322,7 +356,7 @@ object MiraiBridge {
     fun getImage(pluginId: Int, image: String): String =
         call("CQ_getImage", pluginId, "", "Error occurred when plugin %0 downloading image $image") {
             return@call runBlocking {
-                val img = image.replace(".mnimg,type=flash", "").replace(".mnimg", "") // fix when get flash image
+                /*val img = image.replace(".mnimg,type=flash", "").replace(".mnimg", "") // fix when get flash image
                 val u = Image(img).queryUrl()
                 if (u != "") {
                     client.prepareGet(u).execute { response ->
@@ -349,14 +383,43 @@ object MiraiBridge {
                     }
                 }else {
                     ""
+                }*/
+                val img = image.replace(".mnimg,type=flash", ".mnimg") // fix when get flash image
+                var f = File(MiraiNative.imageDataPath.absolutePath + File.separatorChar + img)
+                if (f.exists()) {
+                    val imgInfo = json.decodeFromString(ImageInfo.serializer(), f.readText())
+                    client.prepareGet(imgInfo.url).execute { response ->
+                        if (response.status.isSuccess()) {
+                            val file = File(MiraiNative.imageDataPath.absolutePath + File.separatorChar + imgInfo.id)
+                            response.bodyAsChannel().copyAndClose(file.writeChannel())
+                            file.canonicalPath
+                        } else {
+                            ""
+                        }
+                    }
+                } else {
+                    val u = Image(img.replace(".mnimg", "")).queryUrl()
+                    if (u != "") {
+                        client.prepareGet(u).execute { response ->
+                            if (response.status.isSuccess()) {
+                                val file = File(MiraiNative.imageDataPath.absolutePath + File.separatorChar + img)
+                                response.bodyAsChannel().copyAndClose(file.writeChannel())
+                                file.canonicalPath
+                            } else {
+                                ""
+                            }
+                        }
+                    } else {
+                        ""
+                    }
                 }
             }
         }
 
     fun getRecord(pluginId: Int, record: String) =
-        call("CQ_getRecordV3", pluginId, "", "Error occurred when plugin %0 downloading record $record",30) {
-            return runBlocking {
-                val rec = CacheManager.getRecord(record.replace(".mnrec", ""))
+        call("CQ_getRecordV3", pluginId, "", "Error occurred when plugin %0 downloading record $record", 30) {
+            return@call runBlocking {
+                /*val rec = CacheManager.getRecord(record.replace(".mnrec", ""))
                 if (rec != null) {
                     val file = File(
                         MiraiNative.recDataPath.absolutePath + File.separatorChar +
@@ -373,6 +436,22 @@ object MiraiBridge {
                     }
                 }else{
                     ""
+                }*/
+                val f = File(MiraiNative.recDataPath.absolutePath + File.separatorChar + record)
+                if (!f.exists()) {
+                    ""
+                } else {
+                    val recInfo = json.decodeFromString(RecordInfo.serializer(), f.readText())
+                    client.prepareGet(recInfo.url).execute { response ->
+                        if (response.status.isSuccess()) {
+                            val file =
+                                File(MiraiNative.recDataPath.absolutePath + File.separatorChar + recInfo.filename)
+                            response.bodyAsChannel().copyAndClose(file.writeChannel())
+                            file.canonicalPath
+                        } else {
+                            ""
+                        }
+                    }
                 }
             }
         }
@@ -444,9 +523,9 @@ object MiraiBridge {
         return 0
     }
 
-    fun getMemberHeadImg(pluginId: Int,group: Long,account: Long)=call("CQ_getMemberHeadImg",pluginId,""){
+    fun getMemberHeadImg(pluginId: Int, group: Long, account: Long) = call("CQ_getMemberHeadImg", pluginId, "") {
         return@call runBlocking {
-            val u = MiraiNative.bot.getGroup(group)?.getMember(account)?.avatarUrl?:""
+            val u = MiraiNative.bot.getGroup(group)?.getMember(account)?.avatarUrl ?: ""
             if (u != "") {
                 client.prepareGet(u).execute { response ->
                     if (response.status.isSuccess()) {
@@ -468,15 +547,15 @@ object MiraiBridge {
                         ""
                     }
                 }
-            }else {
+            } else {
                 ""
             }
         }
     }
 
-    fun getFriendHeadImg(pluginId: Int,account: Long)=call("CQ_getFriendHeadImg",pluginId,""){
+    fun getFriendHeadImg(pluginId: Int, account: Long) = call("CQ_getFriendHeadImg", pluginId, "") {
         return@call runBlocking {
-            val u = MiraiNative.bot.getFriend(account)?.avatarUrl?:""
+            val u = MiraiNative.bot.getFriend(account)?.avatarUrl ?: ""
             if (u != "") {
                 client.prepareGet(u).execute { response ->
                     if (response.status.isSuccess()) {
@@ -498,7 +577,7 @@ object MiraiBridge {
                         ""
                     }
                 }
-            }else {
+            } else {
                 ""
             }
         }

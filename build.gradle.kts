@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.7.20"
 
-    id("net.mamoe.mirai-console") version "2.13.4"
+    id("net.mamoe.mirai-console") version "2.14.0"
 }
 
 group = "org.itxtech"
@@ -17,12 +17,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.jetbrains.kotlinx:atomicfu:0.18.4")
-    implementation("io.ktor:ktor-client-okhttp:2.1.3"){
+    implementation("io.ktor:ktor-client-okhttp:2.2.3"){
         exclude(group = "org.jetbrains.kotlin")
         exclude(group = "org.jetbrains.kotlinx")
         exclude(group = "org.slf4j")
     }
+    compileOnly("org.jetbrains.kotlinx:atomicfu:0.18.4")
     implementation("com.squareup.okhttp3:okhttp:4.10.0"){
         exclude(group = "org.jetbrains.kotlin")
         exclude(group = "org.jetbrains.kotlinx")

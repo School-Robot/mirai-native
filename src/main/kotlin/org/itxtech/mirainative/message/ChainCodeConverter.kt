@@ -25,10 +25,15 @@
 package org.itxtech.mirainative.message
 
 import io.ktor.client.call.*
+import io.ktor.client.call.body
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.util.*
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
@@ -36,6 +41,7 @@ import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.PokeMessage.Key.ChuoYiChuo
@@ -43,15 +49,40 @@ import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 import org.itxtech.mirainative.MiraiNative
+import org.itxtech.mirainative.MiraiNative.eventDispatcher
+import org.itxtech.mirainative.MiraiNative.json
 import org.itxtech.mirainative.bridge.MiraiBridge
 import org.itxtech.mirainative.manager.CacheManager
+import org.itxtech.mirainative.message.ChainCodeConverter.useExternalResource
 import org.itxtech.mirainative.util.Music
 import org.itxtech.mirainative.util.NeteaseMusic
 import org.itxtech.mirainative.util.QQMusic
+import java.io.File
 
 @OptIn(MiraiExperimentalApi::class)
 object ChainCodeConverter {
+    @Serializable
+    data class ImageInfo(
+        val id: String,
+        val type: String,
+        val height: Int,
+        val width: Int,
+        val size: Long,
+        val url: String
+    )
+
+    @Serializable
+    data class RecordInfo(
+        val filename: String,
+        val md5: ByteArray,
+        val codec: String,
+        val size: Long,
+        val extra: ByteArray?,
+        val url: String
+    )
+
     private val MSG_EMPTY = PlainText("")
 
     fun String.escape(comma: Boolean): String {
@@ -77,6 +108,10 @@ object ChainCodeConverter {
 
     private suspend inline fun <T> String.useExternalResource(block: (ExternalResource) -> T): T {
         return MiraiBridge.client.get(this).body<ByteArray>().toExternalResource().use(block)
+    }
+
+    private inline fun <T> String.useFileResource(block: (ExternalResource) -> T): T {
+        return File(this).toExternalResource().use(block)
     }
 
     private suspend fun String.toMessageInternal(contact: Contact?): Message {
@@ -118,10 +153,22 @@ object ChainCodeConverter {
                 "image" -> {
                     var image: Image? = null
                     if (args.containsKey("file")) {
-                        image = if (args["file"]!!.endsWith(".mnimg")) {
-                            Image(args["file"]!!.replace(".mnimg", ""))
+                        if (args["file"]!!.endsWith(".mnimg")) {
+                            //Image(args["file"]!!.replace(".mnimg", ""))
+                            var f = File(MiraiNative.imageDataPath.absolutePath + File.separatorChar + args["file"]!!)
+                            if (!f.exists()) {
+                                image = Image(args["file"]!!.replace(".mnimg", ""))
+                            } else {
+                                val imgInfo = json.decodeFromString(ImageInfo.serializer(), f.readText())
+                                f = File(MiraiNative.imageDataPath.absolutePath + File.separatorChar + imgInfo.id)
+                                image = if (!f.exists()) {
+                                    imgInfo.url.useExternalResource { contact!!.uploadImage(it) }
+                                } else {
+                                    f.canonicalPath.useFileResource { contact!!.uploadImage(it) }
+                                }
+                            }
                         } else {
-                            MiraiNative.getDataFile("image", args["file"]!!)?.use {
+                            image = MiraiNative.getDataFile("image", args["file"]!!)?.use {
                                 contact!!.uploadImage(it)
                             }
                         }
@@ -203,10 +250,24 @@ object ChainCodeConverter {
                     var rec: Audio? = null
                     if (contact is AudioSupported) {
                         if (args.containsKey("file")) {
-                            rec = if (args["file"]!!.endsWith(".mnrec")) {
-                                CacheManager.getRecord(args["file"]!!)
+                            if (args["file"]!!.endsWith(".mnrec")) {
+                                //cacheManager.getRecord(args["file"]!!)
+                                var f = File(MiraiNative.recDataPath.absolutePath + File.separatorChar + args["file"]!!)
+                                if (!f.exists()) {
+                                    MiraiNative.logger.debug("无法找到语音文件：${args["file"]}")
+                                    return MSG_EMPTY
+                                } else {
+                                    val recInfo = json.decodeFromString(RecordInfo.serializer(), f.readText())
+                                    f =
+                                        File(MiraiNative.recDataPath.absolutePath + File.separatorChar + recInfo.filename)
+                                    rec = if (f.exists()) {
+                                        f.canonicalPath.useFileResource { contact.uploadAudio(it) }
+                                    } else {
+                                        recInfo.url.useExternalResource { contact.uploadAudio(it) }
+                                    }
+                                }
                             } else {
-                                MiraiNative.getDataFile("record", args["file"]!!)?.use {
+                                rec = MiraiNative.getDataFile("record", args["file"]!!)?.use {
                                     contact.uploadAudio(it)
                                 }
                             }
@@ -260,18 +321,18 @@ object ChainCodeConverter {
                         if (contact is Group) {
                             val member = contact.get(args["qq"]!!.toLong())
                             if (member != null) {
-                                if(member.permission.level>=contact.botPermission.level){
+                                if (member.permission.level >= contact.botPermission.level) {
                                     MiraiNative.logger.warning("权限不足，无法禁言该成员。")
                                     return MSG_EMPTY
                                 }
                                 if (args.containsKey("time")) {
-                                    var time = args["time"]?.toInt()?:0
-                                    if(time<=0) {
+                                    var time = args["time"]?.toInt() ?: 0
+                                    if (time <= 0) {
                                         member.unmute()
                                         return MSG_EMPTY
                                     }
-                                    if(time>2592000) {
-                                        time=2592000
+                                    if (time > 2592000) {
+                                        time = 2592000
                                     }
                                     member.mute(time)
                                 }
@@ -282,11 +343,11 @@ object ChainCodeConverter {
                 }
 
                 "unmute" -> {
-                    if(args.containsKey("qq")){
-                        if(contact is Group) {
+                    if (args.containsKey("qq")) {
+                        if (contact is Group) {
                             val member = contact.get(args["qq"]!!.toLong())
                             if (member != null) {
-                                if(member.permission.level>=contact.botPermission.level){
+                                if (member.permission.level >= contact.botPermission.level) {
                                     MiraiNative.logger.warning("权限不足，无法解除禁言该成员。")
                                     return MSG_EMPTY
                                 }
@@ -306,6 +367,7 @@ object ChainCodeConverter {
         return PlainText(unescape(false))
     }
 
+    @OptIn(MiraiInternalApi::class)
     fun chainToCode(chain: MessageChain): String {
         return chain.joinToString(separator = "") {
             when (it) {
@@ -314,7 +376,24 @@ object ChainCodeConverter {
                 is PlainText -> it.content.escape(false)
                 is Face -> "[CQ:face,id=${it.id}]"
                 is VipFace -> "[CQ:vipface,id=${it.kind.id},name=${it.kind.name},count=${it.count}]"
-                is Image -> "[CQ:image,file=${it.imageId}.mnimg]" // Real file not supported
+                is Image -> {
+                    MiraiNative.launch {
+                        File(MiraiNative.imageDataPath.absolutePath + File.separatorChar + it.imageId + ".mnimg").writeText(
+                            json.encodeToString(
+                                ImageInfo.serializer(),
+                                ImageInfo(
+                                    it.imageId,
+                                    it.imageType.formatName,
+                                    it.height,
+                                    it.width,
+                                    it.size,
+                                    it.queryUrl()
+                                )
+                            )
+                        )
+                    }
+                    return@joinToString "[CQ:image,file=${it.imageId}.mnimg]"
+                } // Real file not supported
                 is RichMessage -> {
                     val content = it.content.escape(true)
                     return@joinToString when (it) {
@@ -329,7 +408,24 @@ object ChainCodeConverter {
                     }
                 }
 
-                is Audio -> "[CQ:record,file=${it.filename}.mnrec]"
+                is OnlineAudio -> {
+                    File(MiraiNative.imageDataPath.absolutePath + File.separatorChar + it.filename + ".mnrec").writeText(
+                        json.encodeToString(
+                            RecordInfo.serializer(),
+                            RecordInfo(
+                                it.filename,
+                                it.fileMd5,
+                                it.codec.formatName,
+                                it.fileSize,
+                                it.extraData,
+                                it.urlForDownload
+                            )
+                        )
+                    )
+                    return@joinToString "[CQ:record,file=${it.filename}.mnrec]"
+                }
+
+                is OfflineAudio -> "[CQ:record,file=${it.filename}.mnrec]"
                 is PokeMessage -> "[CQ:poke,id=${it.id},type=${it.pokeType},name=${it.name}]"
                 is FlashImage -> "[CQ:image,file=${it.image.imageId}.mnimg,type=flash]"
                 is MarketFace -> "[CQ:bface,id=${it.id},name=${it.name}]"

@@ -27,7 +27,8 @@ package org.itxtech.mirainative.manager
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.User
+//import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.data.RequestEventData.Factory.toRequestEventData
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.globalEventChannel
 import net.mamoe.mirai.message.data.*
@@ -57,7 +58,7 @@ object EventManager {
                 launchEvent {
                     NativeBridge.eventPrivateMessage(
                         Bridge.PRI_MSG_SUBTYPE_FRIEND,
-                        CacheManager.cacheMessage(message.source, message),
+                        CacheManager.cacheMessage(message.source, chain = message),
                         sender.id,
                         ChainCodeConverter.chainToCode(message),
                         0
@@ -71,7 +72,7 @@ object EventManager {
                 launchEvent {
                     NativeBridge.eventGroupMessage(
                         1,
-                        CacheManager.cacheMessage(message.source, message),
+                        CacheManager.cacheMessage(message.source, chain = message),
                         group.id,
                         sender.id,
                         if (sender is AnonymousMember) (sender as AnonymousMember).anonymousId else "",//可能不兼容某些插件
@@ -95,7 +96,7 @@ object EventManager {
                 launchEvent {
                     NativeBridge.eventPrivateMessage(
                         Bridge.PRI_MSG_SUBTYPE_ONLINE_STATE,
-                        CacheManager.cacheMessage(message.source, message),
+                        CacheManager.cacheMessage(message.source, chain = message),
                         sender.id,
                         ChainCodeConverter.chainToCode(message),
                         0
@@ -106,33 +107,17 @@ object EventManager {
             // 撤回事件
             subscribeAlways<MessageRecallEvent.FriendRecall> {
                 launchEvent {
-                    NativeBridge.eventPrivateMessage(
-                        Bridge.PRI_MSG_SUBTYPE_ONLINE_STATE,
-                        it.messageIds[0],
-                        operatorId,
-                        "[CQ:recall]",
-                        0
-                    )
                     NativeBridge.eventFriendRecall(
                         1,
                         it.messageTime,
                         operatorId,
-                        ChainCodeConverter.chainToCode(CacheManager.getMessage(it.messageIds[0])?.originalMessage?: buildMessageChain { +PlainText("") })
+                        ChainCodeConverter.chainToCode(CacheManager.findMessage(it.messageIds,it.authorId)?.originalMessage?: buildMessageChain { +PlainText("") })
                     )
                 }
             }
 
             subscribeAlways<MessageRecallEvent.GroupRecall> {
                 launchEvent {
-                    NativeBridge.eventGroupMessage(
-                        1,
-                        it.messageIds[0],
-                        group.id,
-                        operatorOrBot.id,
-                        if (operatorOrBot is AnonymousMember) (operatorOrBot as AnonymousMember).anonymousId else "",//可能不兼容某些插件
-                        "[CQ:recall,author=$authorId]",
-                        0
-                    )
                     NativeBridge.eventGroupRecall(
                         when(operatorOrBot.id==authorId){
                             true->Bridge.GROUP_RECALL_SELF
@@ -142,7 +127,7 @@ object EventManager {
                         group.id,
                         operatorOrBot.id,
                         authorId,
-                        ChainCodeConverter.chainToCode(CacheManager.getMessage(it.messageIds[0])?.originalMessage?: buildMessageChain { +PlainText("") })
+                        ChainCodeConverter.chainToCode(CacheManager.findMessage(it.messageIds,it.authorId)?.originalMessage?: buildMessageChain { +PlainText("") })
                     )
                 }
             }
@@ -192,15 +177,6 @@ object EventManager {
                                 action,
                                 suffix
                             )
-                            NativeBridge.eventGroupMessage(
-                                1,
-                                0,
-                                subject.id,
-                                from.id,
-                                if (from is AnonymousMember) (from as AnonymousMember).anonymousId else "",//可能不兼容某些插件
-                                "[CQ:nudge,qq="+target.id.toString()+"]",
-                                0
-                            )
                         }
                         else->{
                             NativeBridge.eventFriendNudge(
@@ -212,13 +188,6 @@ object EventManager {
                                 target.id,
                                 action,
                                 suffix
-                            )
-                            NativeBridge.eventPrivateMessage(
-                                Bridge.PRI_MSG_SUBTYPE_ONLINE_STATE,
-                                0,
-                                subject.id,
-                                "[CQ:nudge,qq="+target.id.toString()+"]",
-                                0
                             )
                         }
                     }
@@ -260,7 +229,7 @@ object EventManager {
                         groupId,
                         fromId,
                         message.escape(false),
-                        CacheManager.cacheEvent(ev)
+                        CacheManager.cacheEvent(ev.toRequestEventData())
                     )
                 }
             }
@@ -268,7 +237,7 @@ object EventManager {
                 launchEvent {
                     NativeBridge.eventRequestAddGroup(
                         Bridge.REQUEST_GROUP_INVITED,
-                        getTimestamp(), groupId, invitorId, "", CacheManager.cacheEvent(ev)
+                        getTimestamp(), groupId, invitorId, "", CacheManager.cacheEvent(ev.toRequestEventData())
                     )
                 }
             }
@@ -292,7 +261,7 @@ object EventManager {
                         getTimestamp(),
                         fromId,
                         message.escape(false),
-                        CacheManager.cacheEvent(ev)
+                        CacheManager.cacheEvent(ev.toRequestEventData())
                     )
                 }
             }

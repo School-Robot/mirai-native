@@ -58,6 +58,7 @@ object MiraiNative : KotlinPlugin(
     private val dll: File by lazy { File(dataFolder.absolutePath + File.separatorChar + "CQP.dll") }
     val imageDataPath: File by lazy { File("data" + File.separatorChar + "image").also { it.mkdirs() } }
     val recDataPath: File by lazy { File("data" + File.separatorChar + "record").also { it.mkdirs() } }
+    val cacheDataPath: File by lazy { File("data" + File.separatorChar + "cache").also { it.mkdirs() } }
 
     @OptIn(DelicateCoroutinesApi::class)
     private val dispatcher = newSingleThreadContext("MiraiNative Main") + SupervisorJob()

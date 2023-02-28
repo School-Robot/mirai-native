@@ -339,7 +339,7 @@ object Bridge {
     external fun pEvGroupRecall(pluginId: Int, method: ByteArray, subType: Int, time: Int, fromGroup: Long, fromAccount: Long, beingOperateAccount: Long, msg: ByteArray) : Int
 
     @JvmStatic
-    external fun pEvGroupNudge(pluginId: Int, method: ByteArray, subType: Int, fromGroup: Long, fromAccount: Long, benigOperateAccount: Long, action: ByteArray, suffix: ByteArray) : Int
+    external fun pEvGroupNudge(pluginId: Int, method: ByteArray, subType: Int, fromGroup: Long, fromAccount: Long, beingOperateAccount: Long, action: ByteArray, suffix: ByteArray) : Int
     @JvmStatic
     external fun pEvFriendNudge(
         pluginId: Int,

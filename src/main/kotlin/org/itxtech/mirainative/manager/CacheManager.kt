@@ -30,12 +30,17 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.data.RequestEventData
+import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupTempMessageEvent
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import org.itxtech.mirainative.MiraiNative
+import org.itxtech.mirainative.MiraiNative.json
+import java.io.File
 
 class CacheWrapper<T>(
     val obj: T,
@@ -56,7 +61,7 @@ inline fun <K, V> MutableMap<K, CacheWrapper<V>>.checkExpiration(exp: Int) {
 
 object CacheManager {
     private val msgCache = hashMapWrapperOf<Int, MessageSource>()
-    private val evCache = hashMapWrapperOf<Int, BotEvent>()
+    //private val evCache = hashMapWrapperOf<Int, BotEvent>()
     private val senders = hashMapWrapperOf<Long, User>()
     private val anonymousMembers = hashMapOf<Long, HashMap<String, CacheWrapper<AnonymousMember>>>()
     private val records = hashMapWrapperOf<String, OnlineAudio>()
@@ -64,7 +69,7 @@ object CacheManager {
 
     fun checkCacheLimit(exp: Int) {
         msgCache.checkExpiration(exp)
-        evCache.checkExpiration(exp)
+        //evCache.checkExpiration(exp)
         senders.checkExpiration(exp)
         records.checkExpiration(exp)
         anonymousMembers.forEach { it.value.checkExpiration(exp) }
@@ -72,27 +77,42 @@ object CacheManager {
 
     fun nextId() = internalId.getAndIncrement()
 
-    fun cacheEvent(event: BotEvent, id: Int = nextId()) = id.apply { evCache[this] = event }.toString()
+    //fun cacheEvent(event: BotEvent, id: Int = nextId()) = id.apply { evCache[this] = event }.toString()
 
-    fun getEvent(id: String): BotEvent? = evCache.getObj(id.toInt()).also { evCache.remove(id.toInt()) }
+    fun cacheEvent(event: RequestEventData): String {
+        val file = File(MiraiNative.cacheDataPath.absolutePath+File.separatorChar+"${event.eventId}.json")
+        file.writeText(json.encodeToString(RequestEventData.serializer(), event))
+        return event.eventId.toString()
+    }
+    //fun getEvent(id: String): BotEvent? = evCache.getObj(id.toInt()).also { evCache.remove(id.toInt()) }
 
-    fun cacheMessage(source: MessageSource, chain: MessageChain? = null): Int {
-        msgCache[source.ids[0]] = source
+    fun getEvent(id: String): RequestEventData? {
+        val file = File(MiraiNative.cacheDataPath.absolutePath+File.separatorChar+"$id.json")
+        if(file.exists()){
+            val event = json.decodeFromString(RequestEventData.serializer(), file.readText())
+            file.delete()
+            return event
+        }
+        return null
+    }
+
+    fun cacheMessage(source: MessageSource, id: Int = nextId(), chain: MessageChain? = null): Int {
+        msgCache[id] = source
         chain?.forEach {
             if (it is OnlineAudio) {
                 records[it.filename] = it
             }
         }
-        return source.ids[0]
+        return id
     }
 
     fun cacheMember(member: User) {
         senders[member.id] = member
     }
 
-    fun cacheTempMessage(message: GroupTempMessageEvent): Int {
+    fun cacheTempMessage(message: GroupTempMessageEvent, id: Int = nextId()): Int {
         cacheMember(message.sender)
-        return cacheMessage(message.message.source, message.message)
+        return cacheMessage(message.message.source, id, message.message)
     }
 
     fun cacheAnonymousMember(ev: GroupMessageEvent) {
@@ -113,6 +133,15 @@ object CacheManager {
     }
 
     fun getMessage(id: Int): MessageSource? = msgCache.getObj(id)
+
+    fun findMessage(id: IntArray, from: Long): MessageSource? {
+        msgCache.forEach() {
+            if (it.value.obj.ids.contentEquals(id) && it.value.obj.fromId == from) {
+                return it.value.obj
+            }
+        }
+        return null
+    }
 
     fun getRecord(name: String): OnlineAudio? = records.getObj(name.replace(".mnrec", ""))
 
@@ -135,7 +164,7 @@ object CacheManager {
 
     fun clear() {
         msgCache.clear()
-        evCache.clear()
+        //evCache.clear()
         senders.clear()
         anonymousMembers.clear()
     }

@@ -24,6 +24,9 @@
 
 package org.itxtech.mirainative.util
 
+import io.ktor.client.call.body
+import io.ktor.client.call.body
+import io.ktor.client.call.body
 import io.ktor.client.statement.*
 import io.ktor.client.request.*
 import kotlinx.serialization.json.*
