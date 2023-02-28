@@ -322,7 +322,7 @@ object MiraiBridge {
             MiraiNative.launch {
                 if (reqType == Bridge.REQUEST_GROUP_APPLY) {
                     (CacheManager.getEvent(requestId) as? RequestEventData.MemberJoinRequest)?.apply {
-                        when (type) {//1通过，2拒绝，3忽略
+                        when (type) {//1通过，2拒绝
                             1 -> accept(MiraiNative.bot)
                             2 -> reject(MiraiNative.bot, message = reason, blackList = blacklist)
                             //3 -> ignore()
@@ -330,9 +330,9 @@ object MiraiBridge {
                     }
                 } else {
                     (CacheManager.getEvent(requestId) as? RequestEventData.BotInvitedJoinGroupRequest)?.apply {
-                        when (type) {//1通过，2忽略
+                        when (type) {//1通过，2拒绝
                             1 -> accept(MiraiNative.bot)
-                            //2 -> ignore()
+                            2 -> reject(MiraiNative.bot)
                         }
                     }
                 }
